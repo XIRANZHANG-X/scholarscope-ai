@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Local configuration and secrets (template: .env.example)
+.env
+
+# Downloaded API data; rebuild with `uv run scholarscope ingest`
+data/raw/
+
+# Editor and note-vault settings
+.idea/
+.obsidian/

@@ -1,0 +1,53 @@
+[project]
+name = "scholarscope-ai"
+version = "0.1.0"
+description = "ScholarScope AI: multi-source research intelligence on Foundation Models, LLM, RAG and AI Agents"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    # Database access: PostgreSQL + pgvector, Neo4j, migrations (section 7, 8)
+    "psycopg[binary,pool]>=3.3",
+    "sqlalchemy>=2.0",
+    "alembic>=1.20",
+    "pgvector>=0.5",
+    "neo4j>=6.3",
+    # ETL: OpenAlex / ROR / World Bank APIs with retry, validated config (section 4)
+    "httpx>=0.28",
+    "tenacity>=9.1",
+    "pydantic>=2.13",
+    "pydantic-settings>=2.10",
+    # Analysis and ML: EDA, classification, impact prediction, explanations, graphs (section 9)
+    "pandas>=3.0",
+    "scikit-learn>=1.9",
+    "lightgbm>=4.7",
+    "shap>=0.52",
+    "networkx>=3.7",
+    # Embeddings and small Transformer classifiers (section 9.2); torch comes from the CUDA 13.0 index below
+    "torch>=2.14",
+    "sentence-transformers>=6.1",
+    "transformers>=5.17",
+    # LLM providers behind the LLMProvider interface; SQL parsing for the sql-analyst skill (section 10)
+    "openai>=3.17",
+    "ollama>=0.6",
+    "sqlglot>=30.18",
+    # Data product UI (section 11)
+    "streamlit>=1.64",
+    "plotly>=7.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+]
+
+[tool.uv]
+# Application project, not an installable package (no src/ yet).
+package = false
+
+# RTX 50-series (sm_120) needs CUDA 13.0 builds of PyTorch; macOS falls back to the default PyPI wheel.
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]

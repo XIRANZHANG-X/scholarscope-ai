@@ -1,0 +1,2 @@
+# Normalise line endings in the repository; teammates on Windows and macOS check out native endings.
+* text=auto
