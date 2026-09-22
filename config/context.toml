@@ -1,0 +1,49 @@
+# Macro-context phrases (architecture §1): probed only, never downloaded.
+#   uv run scholarscope probe --recall config/context.toml
+# stores yearly counts per phrase (all fields and Computer Science) in meta.recall_probes, so the
+# RAG story can be framed against the whole Foundation Model / LLM / Agents landscape for ~$0.003.
+# Same format as recall.toml; a phrase must not contain commas, double quotes or `|`.
+
+from_date = "2019-01-01"
+types = ["article", "preprint", "conference-paper", "review"]
+primary_field_ids = []
+
+[[queries]]
+key = "fm.foundation_model"
+theme = "foundation_models"
+phrase = "foundation model"
+
+[[queries]]
+key = "fm.pretrained_language_model"
+theme = "foundation_models"
+phrase = "pretrained language model"
+
+[[queries]]
+key = "llm.large_language_model"
+theme = "llm"
+phrase = "large language model"
+
+[[queries]]
+key = "llm.chatgpt"
+theme = "llm"
+phrase = "ChatGPT"
+
+[[queries]]
+key = "rag.retrieval_augmented_generation"
+theme = "rag"
+phrase = "retrieval augmented generation"
+
+[[queries]]
+key = "agents.llm_agent"
+theme = "agents"
+phrase = "LLM agent"
+
+[[queries]]
+key = "agents.ai_agent"
+theme = "agents"
+phrase = "AI agent"
+
+[[queries]]
+key = "agents.agentic_ai"
+theme = "agents"
+phrase = "agentic AI"
