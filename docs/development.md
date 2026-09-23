@@ -62,6 +62,12 @@ GDP nearly so, but R&D spending and researchers-per-million cover ~40% of countr
 2023, and Taiwan is absent from the World Bank entirely. Values are stored as they come, NULLs
 included; `scholarscope quality` reports the gaps.
 
+Provenance: every external fact row carries the `run_id` that last wrote it, and both pipelines
+commit each unit of work as they go, so an interrupted run keeps what it finished. A run that ends
+`failed` can therefore own perfectly good rows — the corpus's crosswalk still holds 16 institution
+matches written by a run whose process was killed afterwards. Join `meta.ingestion_runs` to learn
+when a row arrived and from which release, but do not filter external facts by the run's `status`.
+
 ## Database
 
 - Connect with host `127.0.0.1`, not `localhost` (Windows resolves `localhost` to `::1` first, which
