@@ -33,6 +33,22 @@ def test_ingest_then_quality(db, works_page, cli_settings, recall_file, capsys):
     assert "works_without_recall_hit" in capsys.readouterr().out
 
 
+def test_ingest_unexpected_error_exits_3_and_records_failed_run(db, cli_settings, recall_file, capsys):
+    api = FakeOpenAlex({"large language model": [[]], "retrieval augmented generation": [[]]})
+    api.fail("large language model", "*", 400)
+
+    exit_code = main(["ingest", "--profile", "smoke", "--recall", str(recall_file)], settings=cli_settings, http=api.http())
+
+    assert exit_code == 3
+    run_id, status = db.execute(
+        "SELECT run_id, status FROM meta.ingestion_runs ORDER BY run_id DESC LIMIT 1"
+    ).fetchone()
+    assert status == "failed"
+    err = capsys.readouterr().err
+    assert str(run_id) in err
+    assert "--resume" in err
+
+
 def test_probe_prints_summary(db, cli_settings, recall_file, capsys):
     api = FakeOpenAlex({}, groups={"publication_year": [("2025", 40)], "type": [("article", 40)]})
 

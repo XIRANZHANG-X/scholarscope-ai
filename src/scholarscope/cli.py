@@ -4,16 +4,18 @@ from __future__ import annotations
 
 import argparse
 import logging
+import sys
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
+import psycopg
 
 from scholarscope import db
 from scholarscope.config import Settings
 from scholarscope.ingestion import pipeline, probe
-from scholarscope.ingestion.openalex_client import OpenAlexClient
+from scholarscope.ingestion.openalex_client import OpenAlexClient, OpenAlexError
 from scholarscope.ingestion.raw_cache import RawCache
 from scholarscope.ingestion.recall import load_recall_config
 from scholarscope.quality.checks import run_quality_checks
@@ -78,13 +80,23 @@ def main(argv: Sequence[str] | None = None, *, settings: Settings | None = None,
         if args.command == "ingest":
             client = _client(settings, http)
             cache = RawCache(settings.raw_data_dir)
-            if args.resume is not None:
-                result = pipeline.resume(conn, client, cache, args.resume)
-            else:
-                result = pipeline.ingest(
-                    conn, client, cache, load_recall_config(args.recall), pipeline.PROFILES[args.profile],
-                    to_date=datetime.now(UTC).date(),
-                )
+            try:
+                if args.resume is not None:
+                    result = pipeline.resume(conn, client, cache, args.resume)
+                else:
+                    result = pipeline.ingest(
+                        conn, client, cache, load_recall_config(args.recall), pipeline.PROFILES[args.profile],
+                        to_date=datetime.now(UTC).date(),
+                    )
+            except (OpenAlexError, psycopg.Error) as exc:
+                # pipeline._execute has already marked the run 'failed' in the database; we
+                # just need its id so the message below tells the user how to resume it.
+                if args.resume is not None:
+                    run_id = args.resume
+                else:
+                    run_id = conn.execute("SELECT max(run_id) FROM meta.ingestion_runs").fetchone()[0]
+                print(f"ingest run {run_id} failed: {exc}; resume with --resume {run_id}", file=sys.stderr)
+                return 3
             print(f"run {result.run_id}: {result.status}, {result.works_fetched} works, ${result.cost_usd:.4f}")
             if result.message:
                 print(result.message)

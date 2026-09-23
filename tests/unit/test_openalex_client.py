@@ -1,3 +1,6 @@
+from datetime import UTC, datetime, timedelta
+from email.utils import format_datetime
+
 import httpx
 import pytest
 
@@ -75,6 +78,39 @@ def test_retries_transport_errors():
 
 def test_long_retry_after_means_budget_exhausted():
     client, sleeps = make_client(lambda request: httpx.Response(429, headers={"Retry-After": "3600"}))
+    with pytest.raises(BudgetExhaustedError):
+        client.fetch_works_page("type:article")
+    assert sleeps == []
+
+
+def test_negative_retry_after_is_clamped_to_zero():
+    responses = iter([
+        httpx.Response(429, headers={"Retry-After": "-5"}),
+        httpx.Response(200, json=page_body([])),
+    ])
+    client, sleeps = make_client(lambda request: next(responses))
+    assert client.fetch_works_page("type:article").results == []
+    assert sleeps == [0.0]
+
+
+def test_http_date_retry_after_a_few_seconds_ahead_is_honoured():
+    future = datetime.now(UTC) + timedelta(seconds=8)
+    responses = iter([
+        httpx.Response(429, headers={"Retry-After": format_datetime(future, usegmt=True)}),
+        httpx.Response(200, json=page_body([])),
+    ])
+    client, sleeps = make_client(lambda request: next(responses))
+    assert client.fetch_works_page("type:article").results == []
+    assert len(sleeps) == 1
+    # Bounded around the ~8s delta, not the unrelated 2.0s exponential-backoff first step.
+    assert 5.0 <= sleeps[0] <= 9.0
+
+
+def test_http_date_retry_after_far_future_means_budget_exhausted():
+    far_future = datetime.now(UTC) + timedelta(days=1)
+    client, sleeps = make_client(
+        lambda request: httpx.Response(429, headers={"Retry-After": format_datetime(far_future, usegmt=True)})
+    )
     with pytest.raises(BudgetExhaustedError):
         client.fetch_works_page("type:article")
     assert sleeps == []

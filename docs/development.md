@@ -31,8 +31,9 @@ Budget: a keyword-search page (100 works) costs $0.001; a filter-only page or a 
 $0.0001. Keyless use gets $0.10/day, a free key $1/day. A run that reaches the budget ends `partial`;
 resume it the next day. The key is sent as an `Authorization: Bearer` header, never in URLs.
 
-Exit codes: `ingest` returns 0 when the run succeeded and 2 when it stopped `partial`;
-`quality` returns 1 when any gate fails.
+Exit codes: `ingest` returns 0 when the run succeeded, 2 when it stopped `partial`, and 3 when it
+hit an unexpected OpenAlex or database error (the run is recorded `failed`; resume it with
+`--resume RUN_ID` once the underlying problem is fixed); `quality` returns 1 when any gate fails.
 
 ## Database
 

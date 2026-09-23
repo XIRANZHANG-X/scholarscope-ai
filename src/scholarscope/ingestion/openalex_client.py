@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 
 import httpx
 from tenacity import RetryCallState, Retrying, retry_if_exception_type, stop_after_attempt
@@ -41,10 +43,20 @@ class GroupCount:
 
 
 def _parse_retry_after(value: str | None) -> float | None:
-    try:
-        return float(value) if value is not None else None
-    except ValueError:
+    """RFC 7231: either delay-seconds ("120") or an HTTP-date. Negative/past values clamp to 0.0."""
+    if value is None:
         return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        try:
+            when = parsedate_to_datetime(value)
+        except (TypeError, ValueError):
+            return None
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=UTC)
+        seconds = (when - datetime.now(UTC)).total_seconds()
+    return max(seconds, 0.0)
 
 
 class OpenAlexClient:
