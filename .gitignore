@@ -13,3 +13,6 @@ data/raw/
 # Editor and note-vault settings
 .idea/
 .obsidian/
+
+# Brainstorming companion scratch files
+.superpowers/
