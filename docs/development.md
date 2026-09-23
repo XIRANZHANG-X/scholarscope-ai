@@ -21,6 +21,8 @@ uv run pytest -m "not db"       # unit tests only
 | `uv run scholarscope ingest --profile demo` | 5 000 most relevant RAG works | ≈ $0.05 |
 | `uv run scholarscope ingest --profile standard` | The whole RAG corpus (15,921 works on 2026-09-22), paged by publication date | ≈ $0.16 |
 | `uv run scholarscope ingest --resume RUN_ID` | Continue a `partial` or `failed` run from its checkpoints | — |
+| `uv run scholarscope ror` | Download the ROR dump, load the corpus's organisations, match loose affiliations | free |
+| `uv run scholarscope worldbank` | Refresh World Bank country profiles and indicator series | free |
 | `uv run scholarscope quality --run RUN_ID` | Quality gates and metrics → `meta.data_quality_checks` | none |
 
 The downloaded corpus is defined in `config/recall.toml`; `config/context.toml` holds context phrases
@@ -34,6 +36,22 @@ resume it the next day. The key is sent as an `Authorization: Bearer` header, ne
 Exit codes: `ingest` returns 0 when the run succeeded, 2 when it stopped `partial`, and 3 when it
 hit an unexpected OpenAlex or database error (the run is recorded `failed`; resume it with
 `--resume RUN_ID` once the underlying problem is fixed); `quality` returns 1 when any gate fails.
+
+## External data (Plan 2)
+
+`ror` downloads the newest ROR release from Zenodo (~37 MB, CC0) into `data/raw/ror/`, loads only the
+organisations the corpus references, and fills `external.institution_crosswalk`. It then asks ROR's
+affiliation endpoint about institutions OpenAlex left without a ROR id and about raw affiliation
+strings on authorships it never linked; each distinct string is asked once and cached in
+`external.affiliation_matches`, including confident no-matches. Use `--dump PATH` to load a dump you
+already have, `--no-match` to skip the API step, and `--min-score` to change the 0.8 acceptance
+threshold.
+
+`worldbank` refreshes `external.country_profiles` and six indicator series into
+`external.country_indicators`. Coverage is uneven by design of the source: population is complete,
+GDP nearly so, but R&D spending and researchers-per-million cover ~40% of countries and stop around
+2023, and Taiwan is absent from the World Bank entirely. Values are stored as they come, NULLs
+included; `scholarscope quality` reports the gaps.
 
 ## Database
 
