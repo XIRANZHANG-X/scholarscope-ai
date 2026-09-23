@@ -65,7 +65,11 @@ UPSERT_CROSSWALK_MATCH = (
     "matched_at = now()"
 )
 
-WANTED_ROR_IDS = "SELECT DISTINCT ror_id FROM core.institutions WHERE ror_id IS NOT NULL"
+WANTED_ROR_IDS = (
+    "SELECT ror_id FROM core.institutions WHERE ror_id IS NOT NULL "
+    "UNION SELECT ror_id FROM external.affiliation_matches WHERE ror_id IS NOT NULL "
+    "UNION SELECT ror_id FROM external.institution_crosswalk"
+)
 UNMATCHED_INSTITUTIONS = (
     "SELECT institution.institution_id, institution.display_name FROM core.institutions institution "
     "WHERE NOT EXISTS (SELECT 1 FROM external.institution_crosswalk crosswalk "
@@ -75,7 +79,11 @@ UNMATCHED_INSTITUTIONS = (
 
 
 def wanted_ror_ids(conn: psycopg.Connection) -> set[str]:
-    """The ROR ids OpenAlex already attached to institutions in the corpus."""
+    """Every ROR id the corpus references: OpenAlex's, plus the ones matching itself pulled in.
+
+    The matched ones have to be here too, otherwise an organisation discovered by affiliation or
+    name matching is loaded once and never refreshed by a later release.
+    """
     return {row[0] for row in conn.execute(WANTED_ROR_IDS).fetchall()}
 
 

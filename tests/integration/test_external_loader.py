@@ -195,6 +195,27 @@ def test_observations_keep_nulls_and_skip_unknown_countries(db, corpus):
     ).fetchone() == (None,)
 
 
+def test_wanted_ror_ids_cover_organisations_that_matching_pulled_in(db, corpus):
+    """Organisations only matching knows about must stay wanted, or a newer dump never refreshes them."""
+    from scholarscope.external.ror_match import AffiliationMatch
+
+    loader.load_ror_organizations(db, organizations("02e7b5302", "04yw47259"), run_id=corpus)
+    loader.load_affiliation_matches(
+        db,
+        [("Nanyang Technological University, Singapore", AffiliationMatch("02e7b5302", 1.0, "SINGLE SEARCH")),
+         ("A lab that ROR does not know", None)],
+        run_id=corpus,
+    )
+    db.execute("INSERT INTO core.institutions (institution_id, display_name, ror_id) VALUES ('I99', 'Mac', NULL)")
+    loader.link_crosswalk_match(db, "I99", "04yw47259", 0.9, run_id=corpus)
+
+    wanted = loader.wanted_ror_ids(db)
+
+    assert {"00njsd438", "01yqg2h08", "00cmhce21"} <= wanted  # what OpenAlex supplied
+    assert {"02e7b5302", "04yw47259"} <= wanted  # found by affiliation and by name matching
+    assert None not in wanted  # a cached no-match has a NULL ror_id
+
+
 def test_missing_ror_ids_reports_only_what_is_absent(db, corpus):
     loader.load_ror_organizations(db, organizations("00njsd438"), run_id=corpus)
     assert loader.missing_ror_ids(db, {"00njsd438", "02e7b5302"}) == {"02e7b5302"}
