@@ -137,9 +137,30 @@ def _cache_flush(
     """Load this flush's organisations, then cache its rows. Returns (matched, organisations added)."""
     referenced = {match.ror_id for _, match in results if match}
     added = load_dump_subset(conn, dump_path, loader.missing_ror_ids(conn, referenced), run_id=run_id)
+    storable = _drop_matches_outside_the_dump(conn, results, run_id=run_id)
     with conn.transaction():
-        loader.load_affiliation_matches(conn, results, run_id=run_id)
-    return sum(1 for _, match in results if match), added
+        loader.load_affiliation_matches(conn, storable, run_id=run_id)
+    return sum(1 for _, match in storable if match), added
+
+
+def _drop_matches_outside_the_dump(
+    conn: psycopg.Connection, results: Sequence[tuple[str, AffiliationMatch | None]], *, run_id: int
+) -> list[tuple[str, AffiliationMatch | None]]:
+    """Drop matches naming ROR ids the dump does not hold: it is a monthly snapshot, the API is live.
+
+    Both caches have a foreign key to `external.ror_organizations`, so one such row would fail the
+    whole batch. They are skipped rather than recorded as a no-match — the string does match, we
+    simply cannot reference it yet — which leaves a run against a newer dump free to retry them.
+    """
+    unknown = loader.missing_ror_ids(conn, {match.ror_id for _, match in results if match})
+    if not unknown:
+        return list(results)
+    kept = [(key, match) for key, match in results if not (match and match.ror_id in unknown)]
+    log.warning(
+        "run %s: skipped %d match(es) naming %d ROR id(s) absent from this dump, which is older than "
+        "ROR's data: %s", run_id, len(results) - len(kept), len(unknown), ", ".join(sorted(unknown))
+    )
+    return kept
 
 
 def match_institutions_without_ror(
@@ -165,6 +186,7 @@ def match_institutions_without_ror(
     added = load_dump_subset(
         conn, dump_path, loader.missing_ror_ids(conn, {match.ror_id for _, match in matches}), run_id=run_id
     )
+    matches = _drop_matches_outside_the_dump(conn, matches, run_id=run_id)
     with conn.transaction():
         for institution_id, match in matches:
             loader.link_crosswalk_match(conn, institution_id, match.ror_id, match.score, run_id=run_id)

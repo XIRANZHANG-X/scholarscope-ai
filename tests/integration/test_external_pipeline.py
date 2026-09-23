@@ -1,3 +1,7 @@
+import csv
+import io
+import logging
+import zipfile
 from pathlib import Path
 
 import httpx
@@ -14,6 +18,24 @@ pytestmark = pytest.mark.db
 
 DUMP = Path(__file__).parents[1] / "fixtures" / "ror" / "ror_sample.zip"
 NTU = "Nanyang Technological University, Singapore"
+# An organisation registered after the monthly dump was cut: api.ror.org knows it, the snapshot does not.
+TOO_NEW = "05n3wer99"
+
+
+def newer_dump(tmp_path: Path, ror_id: str) -> Path:
+    """The sample dump plus one organisation, standing in for next month's snapshot."""
+    with zipfile.ZipFile(DUMP) as archive:
+        member = next(name for name in archive.namelist() if name.endswith(".csv"))
+        rows = list(csv.DictReader(io.StringIO(archive.read(member).decode("utf-8"))))
+    extra = {**rows[0], "id": f"https://ror.org/{ror_id}", "names.types.ror_display": "Newly Registered Institute"}
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(buffer, fieldnames=list(rows[0]))
+    writer.writeheader()
+    writer.writerows([*rows, extra])
+    path = tmp_path / "v2.14-2026-10-22-ror-data.zip"
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("v2.14-2026-10-22-ror-data.csv", buffer.getvalue())
+    return path
 
 
 @pytest.fixture
@@ -126,6 +148,49 @@ def test_enrich_ror_matches_an_institution_openalex_left_without_a_ror_id(db, co
     ).fetchone()
     assert row[:2] == ("02e7b5302", "affiliation_string")
     assert row[2] == pytest.approx(0.91)
+
+
+def test_affiliation_match_on_an_organisation_the_dump_lacks_is_skipped(db, corpus, tmp_path, caplog):
+    """ROR's API is live, the dump is a monthly snapshot; a newer organisation must not kill the batch."""
+    api = FakeRorApi({NTU: (TOO_NEW, 0.99)})
+
+    with caplog.at_level(logging.WARNING):
+        result = pipeline.enrich_ror(db, api.http(), dump_dir=tmp_path, dump_path=DUMP, sleep=lambda _s: None)
+
+    assert result.affiliations_matched == 0
+    assert scalar(db, "SELECT count(*) FROM external.affiliation_matches") == 0  # not even as a no-match
+    assert TOO_NEW in caplog.text
+
+    later = pipeline.enrich_ror(
+        db, FakeRorApi({NTU: (TOO_NEW, 0.99)}).http(),
+        dump_dir=tmp_path, dump_path=newer_dump(tmp_path, TOO_NEW), sleep=lambda _s: None,
+    )
+
+    assert later.affiliations_matched == 1  # nothing was cached, so the newer dump gets a second chance
+    assert db.execute(
+        "SELECT ror_id FROM external.affiliation_matches WHERE affiliation = %s", (NTU,)
+    ).fetchone() == (TOO_NEW,)
+
+
+def test_institution_name_match_on_an_organisation_the_dump_lacks_is_skipped(db, corpus, tmp_path, caplog):
+    db.execute("INSERT INTO core.institutions (institution_id, display_name, ror_id) VALUES ('I99', 'NTU', NULL)")
+    api = FakeRorApi({"NTU": (TOO_NEW, 0.95)})
+
+    with caplog.at_level(logging.WARNING):
+        result = pipeline.enrich_ror(db, api.http(), dump_dir=tmp_path, dump_path=DUMP, sleep=lambda _s: None)
+
+    assert result.institutions_linked == 3  # the three OpenAlex ids; I99 stays unlinked for now
+    assert scalar(db, "SELECT count(*) FROM external.institution_crosswalk WHERE institution_id = 'I99'") == 0
+    assert TOO_NEW in caplog.text
+
+    pipeline.enrich_ror(
+        db, FakeRorApi({"NTU": (TOO_NEW, 0.95)}).http(),
+        dump_dir=tmp_path, dump_path=newer_dump(tmp_path, TOO_NEW), sleep=lambda _s: None,
+    )
+
+    assert db.execute(
+        "SELECT ror_id FROM external.institution_crosswalk WHERE institution_id = 'I99'"
+    ).fetchone() == (TOO_NEW,)
 
 
 def test_affiliation_matching_keeps_completed_flushes_when_ror_dies(db, corpus, many_affiliations, tmp_path):
