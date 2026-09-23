@@ -35,7 +35,9 @@ resume it the next day. The key is sent as an `Authorization: Bearer` header, ne
 
 Exit codes: `ingest` returns 0 when the run succeeded, 2 when it stopped `partial`, and 3 when it
 hit an unexpected OpenAlex or database error (the run is recorded `failed`; resume it with
-`--resume RUN_ID` once the underlying problem is fixed); `quality` returns 1 when any gate fails.
+`--resume RUN_ID` once the underlying problem is fixed); `ror` and `worldbank` return 3 on an
+unusable dump, an HTTP error or a database error, with the reason on stderr and the run recorded
+`failed`; `quality` returns 1 when any gate fails.
 
 ## External data (Plan 2)
 
@@ -44,8 +46,15 @@ organisations the corpus references, and fills `external.institution_crosswalk`.
 affiliation endpoint about institutions OpenAlex left without a ROR id and about raw affiliation
 strings on authorships it never linked; each distinct string is asked once and cached in
 `external.affiliation_matches`, including confident no-matches. Use `--dump PATH` to load a dump you
-already have, `--no-match` to skip the API step, and `--min-score` to change the 0.8 acceptance
-threshold.
+already have, `--no-match` to skip the API step, `--min-score` to change the 0.8 acceptance
+threshold, and `--max-affiliations N` to bound how many strings one invocation asks about. That last
+flag is for splitting a first, large run into sessions, not for surviving crashes: the matching loop
+caches every 100 answers, so an interrupted run keeps what it already asked and the next run picks up
+where it stopped.
+
+A full `ror` run over the real corpus takes roughly 9 minutes, nearly all of it the one-per-string
+affiliation calls; the dump download and load are a minute at most. Organisations a match pulls in
+are refreshed by later releases too, so re-running against a newer dump updates the whole set.
 
 `worldbank` refreshes `external.country_profiles` and six indicator series into
 `external.country_indicators`. Coverage is uneven by design of the source: population is complete,
