@@ -104,27 +104,23 @@ def match_unlinked_affiliations(
         return 0, 0, 0
 
     matched = unmatched = added = 0
-    pending: list[tuple[str, AffiliationMatch | None]] = []
-    for index, affiliation in enumerate(affiliations, start=1):
-        pending.append((affiliation, match_affiliation(http, affiliation, min_score=min_score)))
-        if index % FLUSH_EVERY == 0:
-            just_matched, just_added = _cache_flush(conn, dump_path, pending, run_id=run_id)
-            matched, unmatched, added = matched + just_matched, unmatched + _no_matches(pending), added + just_added
-            pending = []
-            log.info("run %s: asked ROR about %d of %d affiliation strings", run_id, index, len(affiliations))
-        if index < len(affiliations):
-            sleep(MATCH_PAUSE_S)
-    if pending:
-        just_matched, just_added = _cache_flush(conn, dump_path, pending, run_id=run_id)
-        matched, unmatched, added = matched + just_matched, unmatched + _no_matches(pending), added + just_added
+    for start in range(0, len(affiliations), FLUSH_EVERY):
+        block = affiliations[start:start + FLUSH_EVERY]
+        results: list[tuple[str, AffiliationMatch | None]] = []
+        for index, affiliation in enumerate(block, start=start + 1):
+            results.append((affiliation, match_affiliation(http, affiliation, min_score=min_score)))
+            if index < len(affiliations):
+                sleep(MATCH_PAUSE_S)
+        just_matched, just_added = _cache_flush(conn, dump_path, results, run_id=run_id)
+        matched += just_matched
+        unmatched += sum(1 for _, match in results if match is None)
+        added += just_added
+        log.info("run %s: asked ROR about %d of %d affiliation strings",
+                 run_id, start + len(block), len(affiliations))
 
     log.info("run %s: %d of %d affiliation strings matched (%d organisations added)",
              run_id, matched, len(affiliations), added)
     return matched, unmatched, added
-
-
-def _no_matches(results: Sequence[tuple[str, AffiliationMatch | None]]) -> int:
-    return sum(1 for _, match in results if match is None)
 
 
 def _cache_flush(
