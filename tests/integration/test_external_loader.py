@@ -186,9 +186,10 @@ def test_observations_keep_nulls_and_skip_unknown_countries(db, corpus):
         {"country_code": "ZZ", "indicator_code": "SP.POP.TOTL", "year": 2024, "value": 1.0},
     ]
 
-    stored = loader.load_observations(db, observations, run_id=corpus)
+    stored, nulls = loader.load_observations(db, observations, run_id=corpus)
 
     assert stored == 2  # the unknown country code is dropped rather than breaking the foreign key
+    assert nulls == 1  # counted over the stored rows, not over what the API sent
     assert db.execute(
         "SELECT value FROM external.country_indicators WHERE country_code = 'SG' AND year = 2026"
     ).fetchone() == (None,)

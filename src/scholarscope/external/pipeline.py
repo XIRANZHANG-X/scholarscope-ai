@@ -224,9 +224,9 @@ def enrich_worldbank(
         for indicator_code in worldbank.INDICATORS:
             series = worldbank.fetch_indicator(http, indicator_code, from_year=from_year, to_year=to_year)
             with conn.transaction():
-                stored = loader.load_observations(conn, series, run_id=run_id)
+                stored, nulls = loader.load_observations(conn, series, run_id=run_id)
             observations += stored
-            missing += sum(1 for observation in series if observation["value"] is None)
+            missing += nulls
             log.info("World Bank run %s: %s -> %d observations stored", run_id, indicator_code, stored)
     except Exception as exc:
         runs.finish_run(conn, run_id, "failed", repr(exc))

@@ -144,15 +144,21 @@ def load_indicator_catalogue(conn: psycopg.Connection, indicators: dict[str, str
     return len(rows)
 
 
-def load_observations(conn: psycopg.Connection, observations: Sequence[dict], *, run_id: int) -> int:
-    """Store observations for countries we know; the API also reports codes outside core.countries."""
+def load_observations(
+    conn: psycopg.Connection, observations: Sequence[dict], *, run_id: int
+) -> tuple[int, int]:
+    """Store observations for countries we know; the API also reports codes outside core.countries.
+
+    Returns (stored, NULL values among the stored rows) so callers report both numbers over the same
+    population: the ~78 aggregate entities the API mixes in are neither stored nor counted.
+    """
     if not observations:
-        return 0
+        return 0, 0
     known = {row[0] for row in conn.execute("SELECT country_code FROM core.countries").fetchall()}
     rows = [{**observation, "run_id": run_id} for observation in observations if observation["country_code"] in known]
     with conn.cursor() as cur:
         cur.executemany(UPSERT_OBSERVATION, rows)
-    return len(rows)
+    return len(rows), sum(1 for row in rows if row["value"] is None)
 
 
 UPSERT_AFFILIATION_MATCH = (

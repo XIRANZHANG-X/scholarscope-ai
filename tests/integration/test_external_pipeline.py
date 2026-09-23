@@ -130,7 +130,7 @@ def test_failing_ror_run_is_marked_failed_and_reraised(db, corpus, tmp_path):
     assert scalar(db, "SELECT status FROM meta.ingestion_runs ORDER BY run_id DESC LIMIT 1") == "failed"
 
 
-def world_bank_api() -> FakeWorldBankApi:
+def world_bank_api(values: dict | None = None) -> FakeWorldBankApi:
     countries = [
         world_bank_country("SG", "SGP", "Singapore"),
         world_bank_country("CN", "CHN", "China"),
@@ -138,7 +138,8 @@ def world_bank_api() -> FakeWorldBankApi:
          "region": {"id": "NA", "iso2code": "", "value": "Aggregates"},
          "incomeLevel": {"id": "NA", "value": "Aggregates"}, "capitalCity": "", "longitude": "", "latitude": ""},
     ]
-    values = {code: [("SG", 2024, 1.0), ("CN", 2024, 2.0), ("SG", 2026, None)] for code in INDICATORS}
+    if values is None:
+        values = {code: [("SG", 2024, 1.0), ("CN", 2024, 2.0), ("SG", 2026, None)] for code in INDICATORS}
     return FakeWorldBankApi(countries, values)
 
 
@@ -158,6 +159,17 @@ def test_enrich_worldbank_stores_countries_indicators_and_nulls(db, corpus):
     ).fetchone() == (None,)
     assert scalar(db, "SELECT status FROM meta.ingestion_runs WHERE run_id = %s" % result.run_id) == "succeeded"
     assert scalar(db, "SELECT source_id FROM meta.ingestion_runs WHERE run_id = %s" % result.run_id) == "worldbank"
+
+
+def test_enrich_worldbank_counts_missing_values_only_among_stored_rows(db, corpus):
+    """'ZH' is the aggregate Africa Eastern and Southern: reported by the indicator endpoint, not a
+    country, so its NULL is never stored and must not inflate the missing-value count."""
+    api = world_bank_api({code: [("SG", 2026, None), ("ZH", 2026, None)] for code in INDICATORS})
+
+    result = pipeline.enrich_worldbank(db, api.http(), from_year=2019, to_year=2026)
+
+    assert result.observations == len(INDICATORS)
+    assert result.missing_values == len(INDICATORS)
 
 
 def test_enrich_worldbank_is_idempotent(db, corpus):
