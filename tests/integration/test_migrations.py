@@ -59,6 +59,30 @@ def test_downgrade_to_base_then_upgrade_again(settings, scratch_db):
     assert relations(settings, scratch_db) == EXPECTED_RELATIONS
 
 
+def test_downgrade_keeps_data_sources_that_runs_reference(settings, scratch_db):
+    migrate(settings, scratch_db)
+    with connect(settings, scratch_db) as conn:
+        conn.execute(
+            "INSERT INTO meta.ingestion_runs (source_id, profile, params, status) "
+            "VALUES ('ror', 'test', '{}'::jsonb, 'succeeded')"
+        )
+        conn.commit()
+
+    downgrade(settings, scratch_db, "0002")
+
+    with connect(settings, scratch_db) as conn:
+        assert conn.execute(
+            "SELECT source_id FROM meta.data_sources WHERE source_id = 'ror'"
+        ).fetchone() == ("ror",)
+        # Undo the synthetic run and the catalogue row it kept alive, so the head migration's
+        # unconditional seed INSERT (unchanged by this fix) doesn't collide on re-upgrade below.
+        conn.execute("DELETE FROM meta.ingestion_runs WHERE source_id = 'ror'")
+        conn.execute("DELETE FROM meta.data_sources WHERE source_id = 'ror'")
+        conn.commit()
+
+    migrate(settings, scratch_db)
+
+
 def test_work_id_format_is_enforced(db):
     with pytest.raises(psycopg.errors.CheckViolation):
         db.execute(

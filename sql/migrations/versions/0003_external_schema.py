@@ -161,7 +161,8 @@ DOWNGRADE = [
     "DROP VIEW bridge.authorship_ror_institutions",
     "DROP VIEW bridge.institution_relationships",
     "DROP SCHEMA external CASCADE",
-    "DELETE FROM meta.data_sources WHERE source_id IN ('ror', 'worldbank')",
+    "DELETE FROM meta.data_sources source WHERE source.source_id IN ('ror', 'worldbank') "
+    "AND NOT EXISTS (SELECT 1 FROM meta.ingestion_runs run WHERE run.source_id = source.source_id)",
 ]
 
 
