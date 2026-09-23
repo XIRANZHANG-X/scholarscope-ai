@@ -34,14 +34,17 @@ dependencies = [
     "plotly>=7.1",
 ]
 
+[project.scripts]
+scholarscope = "scholarscope.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13"]
+build-backend = "uv_build"
+
 [dependency-groups]
 dev = [
     "pytest>=9.1",
 ]
-
-[tool.uv]
-# Application project, not an installable package (no src/ yet).
-package = false
 
 # RTX 50-series (sm_120) needs CUDA 13.0 builds of PyTorch; macOS falls back to the default PyPI wheel.
 [[tool.uv.index]]
@@ -51,3 +54,11 @@ explicit = true
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+
+[tool.uv.build-backend]
+module-name = "scholarscope"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["db: needs the PostgreSQL service from compose.yaml (docker compose up -d)"]

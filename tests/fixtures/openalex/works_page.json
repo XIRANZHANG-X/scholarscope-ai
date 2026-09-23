@@ -1,0 +1,645 @@
+{
+  "meta": {
+    "count": 3,
+    "db_response_time_ms": 42,
+    "page": null,
+    "per_page": 100,
+    "next_cursor": null,
+    "groups_count": null,
+    "cost_usd": 0.001
+  },
+  "results": [
+    {
+      "id": "https://openalex.org/W4384071683",
+      "doi": "https://doi.org/10.1038/s41586-023-06291-2",
+      "title": "Large language models encode clinical knowledge",
+      "display_name": "Large language models encode clinical knowledge",
+      "publication_year": 2023,
+      "publication_date": "2023-07-12",
+      "ids": {
+        "openalex": "https://openalex.org/W4384071683",
+        "doi": "https://doi.org/10.1038/s41586-023-06291-2",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/37438534"
+      },
+      "language": "en",
+      "primary_location": {
+        "is_oa": true,
+        "landing_page_url": "https://doi.org/10.1038/s41586-023-06291-2",
+        "source": {
+          "id": "https://openalex.org/S137773608",
+          "display_name": "Nature",
+          "issn_l": "0028-0836",
+          "type": "journal",
+          "host_organization_name": "Nature Portfolio"
+        }
+      },
+      "type": "article",
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "hybrid",
+        "oa_url": "https://www.nature.com/articles/s41586-023-06291-2.pdf",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5027454515",
+            "display_name": "Karan Singhal",
+            "orcid": "https://orcid.org/0000-0001-9002-7490"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1291425158",
+              "display_name": "Google (United States)",
+              "ror": "https://ror.org/00njsd438",
+              "country_code": "US",
+              "type": "company",
+              "lineage": [
+                "https://openalex.org/I1291425158",
+                "https://openalex.org/I4210128969"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "raw_author_name": "Karan Singhal",
+          "raw_affiliation_strings": [
+            "Google Research, Mountain View, CA, USA. karansinghal@google.com"
+          ]
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5047463591",
+            "display_name": "Shekoofeh Azizi",
+            "orcid": "https://orcid.org/0000-0002-7447-6031"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I1291425158",
+              "display_name": "Google (United States)",
+              "ror": "https://ror.org/00njsd438",
+              "country_code": "US",
+              "type": "company",
+              "lineage": [
+                "https://openalex.org/I1291425158",
+                "https://openalex.org/I4210128969"
+              ]
+            }
+          ],
+          "countries": [
+            "US"
+          ],
+          "is_corresponding": true,
+          "raw_author_name": "Shekoofeh Azizi",
+          "raw_affiliation_strings": [
+            "Google Research, Mountain View, CA, USA. shekazizi@google.com"
+          ]
+        }
+      ],
+      "institutions": [],
+      "cited_by_count": 3855,
+      "fwci": 494.0451,
+      "citation_normalized_percentile": {
+        "value": 0.99998271,
+        "is_in_top_1_percent": true,
+        "is_in_top_10_percent": true
+      },
+      "is_retracted": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10028",
+        "display_name": "Topic Modeling",
+        "score": 0.9991999864578247,
+        "subfield": {
+          "id": "https://openalex.org/subfields/1702",
+          "display_name": "Artificial Intelligence"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/17",
+          "display_name": "Computer Science"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/3",
+          "display_name": "Physical Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10028",
+          "display_name": "Topic Modeling",
+          "score": 0.9991999864578247,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1702",
+            "display_name": "Artificial Intelligence"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/17",
+            "display_name": "Computer Science"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T11636",
+          "display_name": "Artificial Intelligence in Healthcare and Education",
+          "score": 0.9889000058174133,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2718",
+            "display_name": "Health Informatics"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/27",
+            "display_name": "Medicine"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/4",
+            "display_name": "Health Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/computer-science",
+          "display_name": "Computer science",
+          "score": 0.7156330347061157
+        },
+        {
+          "id": "https://openalex.org/keywords/benchmark",
+          "display_name": "Benchmark (surveying)",
+          "score": 0.5696850419044495
+        }
+      ],
+      "referenced_works_count": 91,
+      "referenced_works": [
+        "https://openalex.org/W1981208470",
+        "https://openalex.org/W2042492924",
+        "https://openalex.org/W2086519542"
+      ],
+      "abstract_inverted_index": {
+        "Abstract": [
+          0
+        ],
+        "Large": [
+          1
+        ],
+        "language": [
+          2
+        ],
+        "models": [
+          3
+        ],
+        "(LLMs)": [
+          4
+        ],
+        "have": [
+          5
+        ],
+        "demonstrated": [
+          6
+        ],
+        "impressive": [
+          7
+        ],
+        "capabilities,": [
+          8
+        ],
+        "but": [
+          9
+        ],
+        "the": [
+          10
+        ],
+        "bar": [
+          11
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2026,
+          "cited_by_count": 1361
+        },
+        {
+          "year": 2025,
+          "cited_by_count": 1285
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 964
+        }
+      ],
+      "updated_date": "2026-09-22T06:50:58.402377"
+    },
+    {
+      "id": "https://openalex.org/W4404534210",
+      "doi": "https://doi.org/10.1145/3703155",
+      "title": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+      "display_name": "A Survey on Hallucination in Large Language Models: Principles, Taxonomy, Challenges, and Open Questions",
+      "publication_year": 2024,
+      "publication_date": "2024-11-20",
+      "ids": {
+        "openalex": "https://openalex.org/W4404534210",
+        "doi": "https://doi.org/10.1145/3703155"
+      },
+      "language": "en",
+      "primary_location": {
+        "is_oa": false,
+        "landing_page_url": "https://doi.org/10.1145/3703155",
+        "source": {
+          "id": "https://openalex.org/S4394735545",
+          "display_name": "ACM Transactions on Information Systems",
+          "issn_l": "1046-8188",
+          "type": "journal",
+          "host_organization_name": null
+        }
+      },
+      "type": "article",
+      "open_access": {
+        "is_oa": false,
+        "oa_status": "closed",
+        "oa_url": null,
+        "any_repository_has_fulltext": false
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": null,
+            "display_name": "Lei Huang",
+            "orcid": "https://orcid.org/0009-0002-9650-8353"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I204983213",
+              "display_name": "Harbin Institute of Technology",
+              "ror": "https://ror.org/01yqg2h08",
+              "country_code": "CN",
+              "type": "education",
+              "lineage": [
+                "https://openalex.org/I204983213"
+              ]
+            }
+          ],
+          "countries": [
+            "CN"
+          ],
+          "is_corresponding": false,
+          "raw_author_name": "Lei Huang",
+          "raw_affiliation_strings": [
+            "Harbin Institute of Technology, Harbin, China"
+          ]
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5055989750",
+            "display_name": "Weijiang Yu",
+            "orcid": "https://orcid.org/0000-0002-7449-3093"
+          },
+          "institutions": [
+            {
+              "id": "https://openalex.org/I2250955327",
+              "display_name": "Huawei Technologies (China)",
+              "ror": "https://ror.org/00cmhce21",
+              "country_code": "CN",
+              "type": "company",
+              "lineage": [
+                "https://openalex.org/I2250955327"
+              ]
+            }
+          ],
+          "countries": [
+            "CN"
+          ],
+          "is_corresponding": false,
+          "raw_author_name": "Weijiang Yu",
+          "raw_affiliation_strings": [
+            "Huawei Inc., Shenzhen, China"
+          ]
+        }
+      ],
+      "institutions": [],
+      "cited_by_count": 2080,
+      "fwci": 458.5906,
+      "citation_normalized_percentile": {
+        "value": 0.9999791,
+        "is_in_top_1_percent": true,
+        "is_in_top_10_percent": true
+      },
+      "is_retracted": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10028",
+        "display_name": "Topic Modeling",
+        "score": 0.9926000237464905,
+        "subfield": {
+          "id": "https://openalex.org/subfields/1702",
+          "display_name": "Artificial Intelligence"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/17",
+          "display_name": "Computer Science"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/3",
+          "display_name": "Physical Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10028",
+          "display_name": "Topic Modeling",
+          "score": 0.9926000237464905,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1702",
+            "display_name": "Artificial Intelligence"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/17",
+            "display_name": "Computer Science"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T12808",
+          "display_name": "Ferroelectric and Negative Capacitance Devices",
+          "score": 0.9868000149726868,
+          "subfield": {
+            "id": "https://openalex.org/subfields/2208",
+            "display_name": "Electrical and Electronic Engineering"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/22",
+            "display_name": "Engineering"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/visual-hallucination",
+          "display_name": "Visual Hallucination",
+          "score": 0.5640968084335327
+        },
+        {
+          "id": "https://openalex.org/keywords/psychology",
+          "display_name": "Psychology",
+          "score": 0.5297112464904785
+        }
+      ],
+      "referenced_works_count": 214,
+      "referenced_works": [
+        "https://openalex.org/W89714523",
+        "https://openalex.org/W398859631"
+      ],
+      "abstract_inverted_index": {
+        "The": [
+          0
+        ],
+        "emergence": [
+          1
+        ],
+        "of": [
+          2
+        ],
+        "large": [
+          3
+        ],
+        "language": [
+          4
+        ],
+        "models": [
+          5
+        ],
+        "(LLMs)": [
+          6
+        ],
+        "has": [
+          7
+        ],
+        "marked": [
+          8
+        ],
+        "a": [
+          9
+        ],
+        "significant": [
+          10
+        ],
+        "breakthrough": [
+          11
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2026,
+          "cited_by_count": 1107
+        },
+        {
+          "year": 2025,
+          "cited_by_count": 837
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 136
+        }
+      ],
+      "updated_date": "2026-09-22T06:50:58.402377"
+    },
+    {
+      "id": "https://openalex.org/W4389984066",
+      "doi": "https://doi.org/10.48550/arxiv.2312.10997",
+      "title": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+      "display_name": "Retrieval-Augmented Generation for Large Language Models: A Survey",
+      "relevance_score": 661.9417,
+      "publication_year": 2023,
+      "publication_date": "2023-12-18",
+      "ids": {
+        "openalex": "https://openalex.org/W4389984066",
+        "doi": "https://doi.org/10.48550/arxiv.2312.10997"
+      },
+      "language": "en",
+      "primary_location": {
+        "is_oa": true,
+        "landing_page_url": "http://arxiv.org/abs/2312.10997",
+        "source": {
+          "id": "https://openalex.org/S4306400194",
+          "display_name": "arXiv (Cornell University)",
+          "issn_l": "2331-8422",
+          "type": "repository",
+          "host_organization_name": "Cornell University"
+        }
+      },
+      "type": "preprint",
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "green",
+        "oa_url": "https://arxiv.org/pdf/2312.10997",
+        "any_repository_has_fulltext": true
+      },
+      "authorships": [
+        {
+          "author_position": "first",
+          "author": {
+            "id": "https://openalex.org/A5102001778",
+            "display_name": "Yunfan Gao",
+            "orcid": "https://orcid.org/0000-0002-7932-2752"
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Gao, Yunfan",
+          "raw_affiliation_strings": []
+        },
+        {
+          "author_position": "middle",
+          "author": {
+            "id": "https://openalex.org/A5001877137",
+            "display_name": "Yun Xiong",
+            "orcid": "https://orcid.org/0000-0002-8575-5415"
+          },
+          "institutions": [],
+          "countries": [],
+          "is_corresponding": false,
+          "raw_author_name": "Xiong, Yun",
+          "raw_affiliation_strings": []
+        }
+      ],
+      "institutions": [],
+      "cited_by_count": 747,
+      "fwci": null,
+      "citation_normalized_percentile": null,
+      "is_retracted": false,
+      "primary_topic": {
+        "id": "https://openalex.org/T10028",
+        "display_name": "Topic Modeling",
+        "score": 0.9979000091552734,
+        "subfield": {
+          "id": "https://openalex.org/subfields/1702",
+          "display_name": "Artificial Intelligence"
+        },
+        "field": {
+          "id": "https://openalex.org/fields/17",
+          "display_name": "Computer Science"
+        },
+        "domain": {
+          "id": "https://openalex.org/domains/3",
+          "display_name": "Physical Sciences"
+        }
+      },
+      "topics": [
+        {
+          "id": "https://openalex.org/T10028",
+          "display_name": "Topic Modeling",
+          "score": 0.9979000091552734,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1702",
+            "display_name": "Artificial Intelligence"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/17",
+            "display_name": "Computer Science"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        },
+        {
+          "id": "https://openalex.org/T10181",
+          "display_name": "Natural Language Processing Techniques",
+          "score": 0.9476000070571899,
+          "subfield": {
+            "id": "https://openalex.org/subfields/1702",
+            "display_name": "Artificial Intelligence"
+          },
+          "field": {
+            "id": "https://openalex.org/fields/17",
+            "display_name": "Computer Science"
+          },
+          "domain": {
+            "id": "https://openalex.org/domains/3",
+            "display_name": "Physical Sciences"
+          }
+        }
+      ],
+      "keywords": [
+        {
+          "id": "https://openalex.org/keywords/credibility",
+          "display_name": "Credibility",
+          "score": 0.7182440757751465
+        },
+        {
+          "id": "https://openalex.org/keywords/computer-science",
+          "display_name": "Computer science",
+          "score": 0.7089972496032715
+        }
+      ],
+      "referenced_works_count": 0,
+      "referenced_works": [],
+      "abstract_inverted_index": {
+        "Large": [
+          0
+        ],
+        "Language": [
+          1
+        ],
+        "Models": [
+          2
+        ],
+        "(LLMs)": [
+          3
+        ],
+        "showcase": [
+          4
+        ],
+        "impressive": [
+          5
+        ],
+        "capabilities": [
+          6
+        ],
+        "but": [
+          7
+        ],
+        "encounter": [
+          8
+        ],
+        "challenges": [
+          9
+        ],
+        "like": [
+          10
+        ],
+        "hallucination,": [
+          11
+        ]
+      },
+      "counts_by_year": [
+        {
+          "year": 2026,
+          "cited_by_count": 169
+        },
+        {
+          "year": 2025,
+          "cited_by_count": 361
+        },
+        {
+          "year": 2024,
+          "cited_by_count": 215
+        }
+      ],
+      "updated_date": "2026-09-22T06:50:58.402377"
+    }
+  ],
+  "group_by": []
+}

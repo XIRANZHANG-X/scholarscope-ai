@@ -1,0 +1,21 @@
+# The corpus that is downloaded in full (architecture §1, §5.2 stage 1: candidate recall).
+# Scope decision 2026-09-22 (option A): RAG as the single storyline, Computer Science only.
+# The probe that day counted 15,921 matching works; FM / LLM / Agents stay as context
+# (config/context.toml, counts only).
+#
+# The phrase is sent as an OpenAlex `title_and_abstract.search` phrase (stemmed, hyphen-insensitive).
+# The acronym "RAG" alone is not used: it also means recombination-activating gene in biology.
+# A phrase must not contain commas, double quotes or `|`.
+
+from_date = "2019-01-01"
+
+# OpenAlex added `conference-paper` as its own type; without it NeurIPS/ACL-style papers are lost.
+types = ["article", "preprint", "conference-paper", "review"]
+
+# OpenAlex field IDs on primary_topic. [] = all fields; ["17"] = Computer Science only.
+primary_field_ids = ["17"]
+
+[[queries]]
+key = "rag.retrieval_augmented_generation"
+theme = "rag"
+phrase = "retrieval augmented generation"
