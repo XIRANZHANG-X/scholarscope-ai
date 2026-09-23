@@ -82,3 +82,64 @@ class FakeOpenAlex:
 
     def client(self, **kwargs) -> OpenAlexClient:
         return OpenAlexClient(self.http(), sleep=lambda _seconds: None, **kwargs)
+
+
+class FakeRorApi:
+    """ROR's affiliation endpoint: returns the mapping's ROR id for a known affiliation string."""
+
+    def __init__(self, matches: dict[str, tuple[str, float]]) -> None:
+        self.matches = matches
+        self.requests: list[str] = []
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        affiliation = request.url.params["affiliation"]
+        self.requests.append(affiliation)
+        found = self.matches.get(affiliation)
+        if found is None:
+            return httpx.Response(200, json={"items": []})
+        ror_id, score = found
+        return httpx.Response(200, json={"items": [{
+            "score": score, "chosen": True, "matching_type": "SINGLE SEARCH",
+            "organization": {"id": f"https://ror.org/{ror_id}"},
+        }]})
+
+    def http(self) -> httpx.Client:
+        return httpx.Client(transport=httpx.MockTransport(self.handler), base_url="https://api.ror.org")
+
+
+class FakeWorldBankApi:
+    """World Bank v2: serves the country list and one payload per indicator code."""
+
+    def __init__(self, countries: list, indicator_values: dict[str, list[tuple[str, int, float | None]]]) -> None:
+        self.countries = countries
+        self.indicator_values = indicator_values
+        self.requests: list[str] = []
+        self.fail_indicator: str | None = None
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        self.requests.append(path)
+        envelope = {"page": 1, "pages": 1, "per_page": 20000, "total": 0}
+        if path.endswith("/country"):
+            return httpx.Response(200, json=[{**envelope, "total": len(self.countries)}, self.countries])
+        code = path.rsplit("/", 1)[-1]
+        if code == self.fail_indicator:
+            return httpx.Response(200, json=[{"message": [{"id": "120", "key": "Invalid value", "value": code}]}])
+        rows = [
+            {"indicator": {"id": code}, "country": {"id": country}, "countryiso3code": "",
+             "date": str(year), "value": value}
+            for country, year, value in self.indicator_values.get(code, [])
+        ]
+        return httpx.Response(200, json=[{**envelope, "total": len(rows)}, rows])
+
+    def http(self) -> httpx.Client:
+        return httpx.Client(transport=httpx.MockTransport(self.handler), base_url="https://api.worldbank.org")
+
+
+def world_bank_country(iso2: str, iso3: str, name: str, region: str = "East Asia & Pacific") -> dict:
+    return {
+        "id": iso3, "iso2Code": iso2, "name": name,
+        "region": {"id": "EAS", "iso2code": "Z4", "value": region},
+        "incomeLevel": {"id": "HIC", "iso2code": "XD", "value": "High income"},
+        "capitalCity": "Capital", "longitude": "1.5", "latitude": "2.5",
+    }

@@ -27,11 +27,12 @@ class RunInfo:
     status: str
 
 
-def start_run(conn: psycopg.Connection, profile: str, params: dict) -> int:
+def start_run(conn: psycopg.Connection, profile: str, params: dict, *, source_id: str = SOURCE_ID) -> int:
+    """Open a run. `source_id` names the data source in meta.data_sources (openalex, ror, worldbank)."""
     row = conn.execute(
         "INSERT INTO meta.ingestion_runs (source_id, profile, params, status) "
         "VALUES (%s, %s, %s, 'running') RETURNING run_id",
-        (SOURCE_ID, profile, Jsonb(params)),
+        (source_id, profile, Jsonb(params)),
     ).fetchone()
     return row[0]
 
