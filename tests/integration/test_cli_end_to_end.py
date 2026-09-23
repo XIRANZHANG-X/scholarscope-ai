@@ -1,12 +1,21 @@
 from dataclasses import asdict
+from pathlib import Path
 
 import psycopg
 import pytest
 
 from scholarscope.cli import main
+from scholarscope.external.worldbank import INDICATORS
 from scholarscope.ingestion import runs
 from scholarscope.ingestion.pipeline import PROFILES
-from tests.support import TWO_QUERY_RECALL, TWO_QUERY_RECALL_TOML, FakeOpenAlex
+from tests.support import (
+    TWO_QUERY_RECALL,
+    TWO_QUERY_RECALL_TOML,
+    FakeOpenAlex,
+    FakeRorApi,
+    FakeWorldBankApi,
+    world_bank_country,
+)
 
 pytestmark = pytest.mark.db
 
@@ -105,3 +114,62 @@ def test_probe_prints_summary(db, cli_settings, recall_file, capsys):
     out = capsys.readouterr().out
     assert "llm.large_language_model" in out and "rag.retrieval_augmented_generation" in out
     assert db.execute("SELECT count(*) FROM meta.recall_probes").fetchone() == (8,)
+
+
+ROR_DUMP = Path(__file__).parents[1] / "fixtures" / "ror" / "ror_sample.zip"
+
+
+def test_ror_command_enriches_and_reports(db, works_page, cli_settings, capsys):
+    from scholarscope.ingestion.loader import load_works
+    from scholarscope.ingestion.transform import transform_work
+    from scholarscope.ingestion import runs as ingestion_runs
+
+    run_id = ingestion_runs.start_run(db, "test", {})
+    with db.transaction():
+        load_works(db, [transform_work(w) for w in works_page["results"]], run_id=run_id, query_key="rag")
+    api = FakeRorApi({})
+
+    exit_code = main(
+        ["ror", "--dump", str(ROR_DUMP), "--no-match"], settings=cli_settings, http=api.http()
+    )
+
+    assert exit_code == 0
+    out = capsys.readouterr().out
+    assert "3 institutions linked" in out
+    assert db.execute("SELECT count(*) FROM external.institution_crosswalk").fetchone() == (3,)
+
+
+def test_ror_command_exits_3_when_the_dump_path_is_wrong(db, cli_settings, capsys, tmp_path):
+    """A typo'd --dump must be reported like any other dump failure, not as a traceback."""
+    exit_code = main(
+        ["ror", "--dump", str(tmp_path / "typo.zip")], settings=cli_settings, http=FakeRorApi({}).http()
+    )
+
+    assert exit_code == 3
+    assert "ROR enrichment failed" in capsys.readouterr().err
+
+
+def test_worldbank_command_enriches_and_reports(db, cli_settings, capsys):
+    api = FakeWorldBankApi(
+        [world_bank_country("SG", "SGP", "Singapore")],
+        {code: [("SG", 2024, 1.0)] for code in INDICATORS},
+    )
+
+    exit_code = main(["worldbank", "--from-year", "2019", "--to-year", "2026"], settings=cli_settings, http=api.http())
+
+    assert exit_code == 0
+    assert "1 countries" in capsys.readouterr().out
+    assert db.execute("SELECT count(*) FROM external.country_profiles").fetchone() == (1,)
+
+
+def test_worldbank_command_exits_3_on_api_error(db, cli_settings, capsys):
+    api = FakeWorldBankApi([world_bank_country("SG", "SGP", "Singapore")], {})
+    api.fail_indicator = "SP.POP.TOTL"
+
+    exit_code = main(["worldbank"], settings=cli_settings, http=api.http())
+
+    assert exit_code == 3
+    assert "World Bank enrichment failed" in capsys.readouterr().err
+    assert db.execute(
+        "SELECT status FROM meta.ingestion_runs ORDER BY run_id DESC LIMIT 1"
+    ).fetchone() == ("failed",)

@@ -1,0 +1,150 @@
+[
+ {
+  "page": 1,
+  "pages": 1,
+  "per_page": 20000,
+  "total": 5
+ },
+ [
+  {
+   "id": "CHN",
+   "iso2Code": "CN",
+   "name": "China",
+   "region": {
+    "id": "EAS",
+    "iso2code": "Z4",
+    "value": "East Asia & Pacific"
+   },
+   "adminregion": {
+    "id": "EAP",
+    "iso2code": "4E",
+    "value": "East Asia & Pacific (excluding high income)"
+   },
+   "incomeLevel": {
+    "id": "UMC",
+    "iso2code": "XT",
+    "value": "Upper middle income"
+   },
+   "lendingType": {
+    "id": "IBD",
+    "iso2code": "XF",
+    "value": "IBRD"
+   },
+   "capitalCity": "Beijing",
+   "longitude": "116.286",
+   "latitude": "40.0495"
+  },
+  {
+   "id": "IND",
+   "iso2Code": "IN",
+   "name": "India",
+   "region": {
+    "id": "SAS",
+    "iso2code": "8S",
+    "value": "South Asia"
+   },
+   "adminregion": {
+    "id": "SAS",
+    "iso2code": "8S",
+    "value": "South Asia"
+   },
+   "incomeLevel": {
+    "id": "LMC",
+    "iso2code": "XN",
+    "value": "Lower middle income"
+   },
+   "lendingType": {
+    "id": "IBD",
+    "iso2code": "XF",
+    "value": "IBRD"
+   },
+   "capitalCity": "New Delhi",
+   "longitude": "77.225",
+   "latitude": "28.6353"
+  },
+  {
+   "id": "SGP",
+   "iso2Code": "SG",
+   "name": "Singapore",
+   "region": {
+    "id": "EAS",
+    "iso2code": "Z4",
+    "value": "East Asia & Pacific"
+   },
+   "adminregion": {
+    "id": "",
+    "iso2code": "",
+    "value": ""
+   },
+   "incomeLevel": {
+    "id": "HIC",
+    "iso2code": "XD",
+    "value": "High income"
+   },
+   "lendingType": {
+    "id": "LNX",
+    "iso2code": "XX",
+    "value": "Not classified"
+   },
+   "capitalCity": "Singapore",
+   "longitude": "103.85",
+   "latitude": "1.28941"
+  },
+  {
+   "id": "USA",
+   "iso2Code": "US",
+   "name": "United States",
+   "region": {
+    "id": "NAC",
+    "iso2code": "XU",
+    "value": "North America"
+   },
+   "adminregion": {
+    "id": "",
+    "iso2code": "",
+    "value": ""
+   },
+   "incomeLevel": {
+    "id": "HIC",
+    "iso2code": "XD",
+    "value": "High income"
+   },
+   "lendingType": {
+    "id": "LNX",
+    "iso2code": "XX",
+    "value": "Not classified"
+   },
+   "capitalCity": "Washington D.C.",
+   "longitude": "-77.032",
+   "latitude": "38.8895"
+  },
+  {
+   "id": "AFE",
+   "iso2Code": "ZH",
+   "name": "Africa Eastern and Southern",
+   "region": {
+    "id": "NA",
+    "iso2code": "NA",
+    "value": "Aggregates"
+   },
+   "adminregion": {
+    "id": "",
+    "iso2code": "",
+    "value": ""
+   },
+   "incomeLevel": {
+    "id": "NA",
+    "iso2code": "NA",
+    "value": "Aggregates"
+   },
+   "lendingType": {
+    "id": "",
+    "iso2code": "",
+    "value": "Aggregates"
+   },
+   "capitalCity": "",
+   "longitude": "",
+   "latitude": ""
+  }
+ ]
+]

@@ -12,7 +12,7 @@
 
 - Python `>=3.13,<3.14`，一律用 `uv run ...` 执行；**不新增任何依赖**，本计划用到的库全部已在 `uv.lock` 中。
 - 外部数据只能经 `scholarscope.external` 进入数据库；分析、ML、界面和 Agent 只读 PostgreSQL（架构 §6）。
-- 每张 `external` 表的行都带 `run_id`，指向 `meta.ingestion_runs` 里记录了版本号、校验和或 API 参数的那次运行。
+- `external` 的事实表（`ror_organizations`、`institution_crosswalk`、`affiliation_matches`、`country_profiles`、`country_indicators`）每行都带 `run_id`，指向 `meta.ingestion_runs` 里记录了版本号、校验和或 API 参数的那次运行；`ror_relationships` 随父机构整体重写、`indicators` 是静态代码对照表，这两张表不带 `run_id`。
 - 数据库主机一律写 `127.0.0.1`，不写 `localhost`（Windows 上 `localhost` 先解析到 `::1`，Docker Desktop 不应答）。
 - 迁移是 Alembic 版本文件里的原生 SQL，版本表为 `meta.schema_versions`。
 - 缺失值保留为 NULL，不填充、不丢弃；覆盖率由 `scholarscope quality` 的指标报告（架构 §4.5、§7.1）。
@@ -23,7 +23,7 @@
 
 ## 本计划依据的实测事实（2026-09-23）
 
-计划中的代码已在真实数据上完整跑通：106 项测试通过（Plan 1 的 62 项加本计划的 44 项），并对**语料数据库的副本**做了真实 API 验收，因此下面的数字都是实测值，不是估算。
+计划中的代码已在真实数据上完整跑通：109 项测试通过（Plan 1 的 62 项加本计划的 47 项，含复查阶段补的 1 项迁移测试与 2 项匹配规则测试），并对**语料数据库的副本**做了真实 API 验收，因此下面的数字都是实测值，不是估算。
 
 **语料现状**（15,921 篇 RAG 论文，Plan 1 采集）：
 
@@ -243,6 +243,8 @@ UPGRADE = [
          'Versioned data dump from Zenodo (community ror-data), plus the affiliation matching API.'),
         ('worldbank', 'World Bank Open Data', 'https://data.worldbank.org', 'CC BY 4.0',
          'Country metadata and development indicators via the v2 REST API.')
+    ON CONFLICT (source_id) DO UPDATE SET
+        name = EXCLUDED.name, url = EXCLUDED.url, license = EXCLUDED.license, notes = EXCLUDED.notes
     """,
     # ---- ROR ---------------------------------------------------------------------------------
     """
@@ -384,7 +386,8 @@ DOWNGRADE = [
     "DROP VIEW bridge.authorship_ror_institutions",
     "DROP VIEW bridge.institution_relationships",
     "DROP SCHEMA external CASCADE",
-    "DELETE FROM meta.data_sources WHERE source_id IN ('ror', 'worldbank')",
+    "DELETE FROM meta.data_sources source WHERE source.source_id IN ('ror', 'worldbank') "
+    "AND NOT EXISTS (SELECT 1 FROM meta.ingestion_runs run WHERE run.source_id = source.source_id)",
 ]
 
 
@@ -401,7 +404,7 @@ def downgrade() -> None:
 - [ ] **Step 4: 确认通过**
 
 Run: `uv run pytest -v`
-Expected: `62 passed`
+Expected: `63 passed`
 
 ```bash
 uv run alembic upgrade head
@@ -795,7 +798,7 @@ Run: `uv run pytest tests/unit/test_ror.py -v`
 Expected: `10 passed`
 
 Run: `uv run pytest`
-Expected: `72 passed`
+Expected: `73 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -825,7 +828,7 @@ git commit -m "feat: read and parse the ROR data dump" -m "Co-Authored-By: Claud
 ```python
 import httpx
 
-from scholarscope.external.ror_match import match_affiliation
+from scholarscope.external.ror_match import DEFAULT_MIN_SCORE, match_affiliation
 
 
 def client(payload, seen: list | None = None) -> httpx.Client:
@@ -878,6 +881,20 @@ def test_threshold_is_configurable():
     payload = {"items": [item("008pxsf13", 0.7, True)]}
     assert match_affiliation(client(payload), "Partial Name") is None
     match = match_affiliation(client(payload), "Partial Name", min_score=0.65)
+    assert match is not None and match.ror_id == "008pxsf13"
+
+
+def test_a_stronger_unchosen_candidate_is_never_substituted():
+    # A malformed response with a second "chosen" entry: the endpoint promises at most one, but the
+    # code must still bail out on the first below-threshold "chosen" hit rather than scan onward for
+    # a stronger one — a non-chosen alternative is already filtered before reaching that check.
+    payload = {"items": [item("008pxsf13", 0.5, True), item("02e7b5302", 0.95, True)]}
+    assert match_affiliation(client(payload), "Ambiguous Institute") is None
+
+
+def test_score_exactly_at_the_threshold_is_accepted():
+    payload = {"items": [item("008pxsf13", DEFAULT_MIN_SCORE, True)]}
+    match = match_affiliation(client(payload), "Boundary University")
     assert match is not None and match.ror_id == "008pxsf13"
 ```
 
@@ -939,10 +956,10 @@ def match_affiliation(
 - [ ] **Step 4: 确认通过**
 
 Run: `uv run pytest tests/unit/test_ror_match.py -v`
-Expected: `5 passed`
+Expected: `7 passed`
 
 Run: `uv run pytest`
-Expected: `77 passed`
+Expected: `78 passed`
 
 - [ ] **Step 5: 提交**
 
@@ -1200,7 +1217,7 @@ Run: `uv run pytest tests/unit/test_worldbank.py -v`
 Expected: `5 passed`
 
 Run: `uv run pytest`
-Expected: `82 passed`
+Expected: `85 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -1642,7 +1659,7 @@ Run: `uv run pytest tests/integration/test_external_loader.py -v`
 Expected: `11 passed`
 
 Run: `uv run pytest`
-Expected: `93 passed`
+Expected: `96 passed`
 
 - [ ] **Step 5: 提交**
 
@@ -2196,7 +2213,7 @@ Run: `uv run pytest tests/integration/test_external_pipeline.py -v`
 Expected: `10 passed`
 
 Run: `uv run pytest`
-Expected: `103 passed`
+Expected: `106 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -2412,7 +2429,7 @@ Run: `uv run pytest tests/integration/test_cli_end_to_end.py -v`
 Expected: 全部通过（含 3 个新测试）
 
 Run: `uv run pytest`
-Expected: `106 passed`
+Expected: `109 passed`
 
 ```bash
 uv run scholarscope ror --help
@@ -2526,7 +2543,7 @@ uv run scholarscope migrate
 uv run pytest -q
 ```
 
-Expected：`0003 (head)` 已应用；`106 passed`。
+Expected：`0003 (head)` 已应用；`109 passed`。
 
 - [ ] **Step 2: ROR 富化**
 
@@ -2599,7 +2616,7 @@ git commit -m "docs: record Plan 2 enrichment results in the architecture" -m "C
 
 ## 完成标准
 
-- `uv run pytest` 显示 `106 passed`；`uv run pytest -m "not db"` 显示 `55 passed, 51 deselected`。
+- `uv run pytest` 显示 `109 passed`；`uv run pytest -m "not db"` 显示 `57 passed, 52 deselected`。
 - `uv run scholarscope ror` 与 `uv run scholarscope worldbank` 真实运行成功，重跑不产生重复行、不重复调用 API。
 - `scholarscope quality` 的 4 个质量门仍全部 PASS，新增四项指标有真实数值。
 - `任务架构.md` 记录了两个数据源的实际做法、覆盖率与已知缺口（台湾、研发指标滞后）。

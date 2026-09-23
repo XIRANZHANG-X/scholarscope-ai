@@ -14,6 +14,10 @@ import psycopg
 
 from scholarscope import db
 from scholarscope.config import Settings
+from scholarscope.external import pipeline as external_pipeline
+from scholarscope.external.ror import RorDumpError
+from scholarscope.external.ror_match import DEFAULT_MIN_SCORE
+from scholarscope.external.worldbank import WorldBankError
 from scholarscope.ingestion import pipeline, probe
 from scholarscope.ingestion.openalex_client import OpenAlexClient, OpenAlexError
 from scholarscope.ingestion.raw_cache import RawCache
@@ -22,6 +26,13 @@ from scholarscope.quality.checks import run_quality_checks
 
 DEFAULT_RECALL = db.PROJECT_ROOT / "config" / "recall.toml"
 USER_AGENT = "ScholarScopeAI/0.1"
+
+
+def _plain_http(http: httpx.Client | None) -> httpx.Client:
+    """A client for the external APIs (ROR, Zenodo, World Bank); each module uses absolute URLs."""
+    if http is not None:
+        return http
+    return httpx.Client(timeout=httpx.Timeout(120.0), headers={"User-Agent": USER_AGENT}, follow_redirects=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -38,6 +49,16 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--profile", choices=sorted(pipeline.PROFILES))
     mode.add_argument("--resume", type=int, metavar="RUN_ID")
     p_ingest.add_argument("--recall", type=Path, default=DEFAULT_RECALL)
+
+    p_ror = sub.add_parser("ror", help="load the corpus's ROR organisations and match loose affiliations")
+    p_ror.add_argument("--dump", type=Path, help="use this ROR dump instead of downloading the newest release")
+    p_ror.add_argument("--no-match", action="store_true", help="skip ROR affiliation matching entirely")
+    p_ror.add_argument("--min-score", type=float, default=DEFAULT_MIN_SCORE, help="lowest accepted match score")
+    p_ror.add_argument("--max-affiliations", type=int, help="stop after this many affiliation strings")
+
+    p_worldbank = sub.add_parser("worldbank", help="refresh World Bank country profiles and indicators")
+    p_worldbank.add_argument("--from-year", type=int, default=2019)
+    p_worldbank.add_argument("--to-year", type=int, help="defaults to the current year")
 
     p_quality = sub.add_parser("quality", help="run data-quality checks and record them")
     p_quality.add_argument("--run", type=int, metavar="RUN_ID", help="ingestion run the checks belong to")
@@ -110,6 +131,43 @@ def main(argv: Sequence[str] | None = None, *, settings: Settings | None = None,
             if result.message:
                 print(result.message)
             return 0 if result.status == "succeeded" else 2
+
+        if args.command == "ror":
+            try:
+                result = external_pipeline.enrich_ror(
+                    conn,
+                    _plain_http(http),
+                    dump_dir=settings.raw_data_dir / "ror",
+                    dump_path=args.dump,
+                    match_affiliations=not args.no_match,
+                    min_score=args.min_score,
+                    max_affiliations=args.max_affiliations,
+                )
+            except (RorDumpError, httpx.HTTPError, psycopg.Error) as exc:
+                print(f"ROR enrichment failed: {exc}", file=sys.stderr)
+                return 3
+            print(
+                f"run {result.run_id}: ROR {result.version}, {result.organizations_loaded} organisations, "
+                f"{result.institutions_linked} institutions linked, "
+                f"{result.affiliations_matched} affiliation strings matched "
+                f"({result.affiliations_unmatched} unmatched)"
+            )
+            return 0
+
+        if args.command == "worldbank":
+            to_year = args.to_year or datetime.now(UTC).year
+            try:
+                result = external_pipeline.enrich_worldbank(
+                    conn, _plain_http(http), from_year=args.from_year, to_year=to_year
+                )
+            except (WorldBankError, httpx.HTTPError, psycopg.Error) as exc:
+                print(f"World Bank enrichment failed: {exc}", file=sys.stderr)
+                return 3
+            print(
+                f"run {result.run_id}: {result.countries} countries, {result.observations} observations "
+                f"({result.missing_values} without a value), {args.from_year}-{to_year}"
+            )
+            return 0
 
         if args.command == "quality":
             results = run_quality_checks(conn, args.run)

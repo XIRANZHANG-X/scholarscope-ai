@@ -94,6 +94,36 @@ CHECKS = (
         "FROM bridge.work_references r",
         None,
     ),
+    QualityCheck(
+        "institutions_without_ror",
+        "Institutions with no ROR id in the crosswalk (Plan 2 enrichment)",
+        "SELECT count(*) FILTER (WHERE NOT EXISTS "
+        "(SELECT 1 FROM external.institution_crosswalk c WHERE c.institution_id = i.institution_id)), "
+        "count(*) FROM core.institutions i",
+        None,
+    ),
+    QualityCheck(
+        "corpus_countries_without_profile",
+        "Countries appearing in the corpus that the World Bank does not list (e.g. Taiwan)",
+        "SELECT count(*) FILTER (WHERE NOT EXISTS "
+        "(SELECT 1 FROM external.country_profiles p WHERE p.country_code = c.country_code)), count(*) "
+        "FROM (SELECT DISTINCT country_code FROM bridge.work_countries) c",
+        None,
+    ),
+    QualityCheck(
+        "works_without_country",
+        "Works with no country attribution, after ROR affiliation recovery",
+        "SELECT count(*) FILTER (WHERE NOT EXISTS "
+        "(SELECT 1 FROM bridge.work_countries wc WHERE wc.work_id = w.work_id)), count(*) FROM core.works w",
+        None,
+    ),
+    QualityCheck(
+        "rd_indicator_missing",
+        "Country-year cells with no R&D spending value (the World Bank reporting lag)",
+        "SELECT count(*) FILTER (WHERE value IS NULL), count(*) FROM external.country_indicators "
+        "WHERE indicator_code = 'GB.XPD.RSDV.GD.ZS'",
+        None,
+    ),
 )
 
 INSERT_RESULT = (

@@ -14,6 +14,10 @@ EXPECTED_RELATIONS = {
     "core.works", "core.work_yearly_citations",
     "bridge.work_authors", "bridge.authorship_institutions", "bridge.authorship_countries", "bridge.work_topics",
     "bridge.work_keywords", "bridge.work_references", "bridge.work_institutions", "bridge.author_affiliations",
+    "bridge.institution_relationships", "bridge.authorship_ror_institutions", "bridge.work_countries",
+    "external.ror_organizations", "external.ror_relationships", "external.institution_crosswalk",
+    "external.affiliation_matches", "external.country_profiles", "external.indicators",
+    "external.country_indicators",
 }
 
 
@@ -32,7 +36,7 @@ def relations(settings, dbname) -> set[str]:
     with connect(settings, dbname) as conn:
         rows = conn.execute(
             "SELECT table_schema || '.' || table_name FROM information_schema.tables "
-            "WHERE table_schema IN ('meta', 'core', 'bridge')"
+            "WHERE table_schema IN ('meta', 'core', 'bridge', 'external')"
         ).fetchall()
     return {r[0] for r in rows}
 
@@ -41,7 +45,7 @@ def test_upgrade_creates_every_table_and_view(settings, scratch_db):
     migrate(settings, scratch_db)
     assert relations(settings, scratch_db) == EXPECTED_RELATIONS
     with connect(settings, scratch_db) as conn:
-        assert conn.execute("SELECT version_num FROM meta.schema_versions").fetchone() == ("0002",)
+        assert conn.execute("SELECT version_num FROM meta.schema_versions").fetchone() == ("0003",)
         assert conn.execute("SELECT license FROM meta.data_sources WHERE source_id = 'openalex'").fetchone() == (
             "CC0 1.0",
         )
@@ -53,6 +57,32 @@ def test_downgrade_to_base_then_upgrade_again(settings, scratch_db):
     assert relations(settings, scratch_db) == {"meta.schema_versions"}
     migrate(settings, scratch_db)
     assert relations(settings, scratch_db) == EXPECTED_RELATIONS
+
+
+def test_downgrade_keeps_data_sources_that_runs_reference(settings, scratch_db):
+    migrate(settings, scratch_db)
+    with connect(settings, scratch_db) as conn:
+        conn.execute(
+            "INSERT INTO meta.ingestion_runs (source_id, profile, params, status) "
+            "VALUES ('ror', 'test', '{}'::jsonb, 'succeeded')"
+        )
+        conn.commit()
+
+    downgrade(settings, scratch_db, "0002")
+
+    with connect(settings, scratch_db) as conn:
+        assert conn.execute(
+            "SELECT source_id FROM meta.data_sources WHERE source_id = 'ror'"
+        ).fetchone() == ("ror",)
+
+    # Re-upgrading must succeed even though the 'ror' row survived the downgrade: the seed
+    # INSERT in 0003 has to be idempotent, with no manual cleanup required in between.
+    migrate(settings, scratch_db)
+
+    with connect(settings, scratch_db) as conn:
+        assert conn.execute(
+            "SELECT count(*) FROM meta.data_sources WHERE source_id = 'ror'"
+        ).fetchone() == (1,)
 
 
 def test_work_id_format_is_enforced(db):
