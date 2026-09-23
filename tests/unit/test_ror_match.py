@@ -1,6 +1,6 @@
 import httpx
 
-from scholarscope.external.ror_match import match_affiliation
+from scholarscope.external.ror_match import DEFAULT_MIN_SCORE, match_affiliation
 
 
 def client(payload, seen: list | None = None) -> httpx.Client:
@@ -53,4 +53,18 @@ def test_threshold_is_configurable():
     payload = {"items": [item("008pxsf13", 0.7, True)]}
     assert match_affiliation(client(payload), "Partial Name") is None
     match = match_affiliation(client(payload), "Partial Name", min_score=0.65)
+    assert match is not None and match.ror_id == "008pxsf13"
+
+
+def test_a_stronger_unchosen_candidate_is_never_substituted():
+    # A malformed response with a second "chosen" entry: the endpoint promises at most one, but the
+    # code must still bail out on the first below-threshold "chosen" hit rather than scan onward for
+    # a stronger one — a non-chosen alternative is already filtered before reaching that check.
+    payload = {"items": [item("008pxsf13", 0.5, True), item("02e7b5302", 0.95, True)]}
+    assert match_affiliation(client(payload), "Ambiguous Institute") is None
+
+
+def test_score_exactly_at_the_threshold_is_accepted():
+    payload = {"items": [item("008pxsf13", DEFAULT_MIN_SCORE, True)]}
+    match = match_affiliation(client(payload), "Boundary University")
     assert match is not None and match.ror_id == "008pxsf13"
