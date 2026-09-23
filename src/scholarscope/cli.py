@@ -80,6 +80,7 @@ def main(argv: Sequence[str] | None = None, *, settings: Settings | None = None,
         if args.command == "ingest":
             client = _client(settings, http)
             cache = RawCache(settings.raw_data_dir)
+            previous_run_id = conn.execute("SELECT max(run_id) FROM meta.ingestion_runs").fetchone()[0]
             try:
                 if args.resume is not None:
                     result = pipeline.resume(conn, client, cache, args.resume)
@@ -89,13 +90,21 @@ def main(argv: Sequence[str] | None = None, *, settings: Settings | None = None,
                         to_date=datetime.now(UTC).date(),
                     )
             except (OpenAlexError, psycopg.Error) as exc:
-                # pipeline._execute has already marked the run 'failed' in the database; we
-                # just need its id so the message below tells the user how to resume it.
+                # pipeline._execute marks a run 'failed' once it has a row to update -- but for a
+                # fresh ingest that row only exists once runs.start_run's INSERT has committed. A
+                # psycopg.Error raised before or during that INSERT (e.g. the connection drops)
+                # leaves no row for this attempt, so there is nothing to resume. --resume's run
+                # always already exists (it's why we're resuming it), so that id is unchanged.
                 if args.resume is not None:
                     run_id = args.resume
                 else:
-                    run_id = conn.execute("SELECT max(run_id) FROM meta.ingestion_runs").fetchone()[0]
-                print(f"ingest run {run_id} failed: {exc}; resume with --resume {run_id}", file=sys.stderr)
+                    latest_run_id = conn.execute("SELECT max(run_id) FROM meta.ingestion_runs").fetchone()[0]
+                    run_id = latest_run_id if latest_run_id is not None and latest_run_id != previous_run_id else None
+                if run_id is None:
+                    print(f"ingest failed before a run was ever recorded, so it never started and cannot be "
+                          f"resumed: {exc}", file=sys.stderr)
+                else:
+                    print(f"ingest run {run_id} failed: {exc}; resume with --resume {run_id}", file=sys.stderr)
                 return 3
             print(f"run {result.run_id}: {result.status}, {result.works_fetched} works, ${result.cost_usd:.4f}")
             if result.message:

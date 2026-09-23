@@ -1,7 +1,12 @@
+from dataclasses import asdict
+
+import psycopg
 import pytest
 
 from scholarscope.cli import main
-from tests.support import TWO_QUERY_RECALL_TOML, FakeOpenAlex
+from scholarscope.ingestion import runs
+from scholarscope.ingestion.pipeline import PROFILES
+from tests.support import TWO_QUERY_RECALL, TWO_QUERY_RECALL_TOML, FakeOpenAlex
 
 pytestmark = pytest.mark.db
 
@@ -47,6 +52,49 @@ def test_ingest_unexpected_error_exits_3_and_records_failed_run(db, cli_settings
     err = capsys.readouterr().err
     assert str(run_id) in err
     assert "--resume" in err
+
+
+def test_ingest_failure_before_run_row_exists_cannot_be_resumed(db, cli_settings, recall_file, capsys, monkeypatch):
+    """A psycopg.Error raised before `runs.start_run`'s INSERT commits leaves no run row at all
+    (e.g. the INSERT itself fails), so there is nothing this attempt could resume."""
+
+    def _raise(*_args, **_kwargs):
+        raise psycopg.OperationalError("connection lost")
+
+    monkeypatch.setattr("scholarscope.cli.pipeline.ingest", _raise)
+
+    exit_code = main(
+        ["ingest", "--profile", "smoke", "--recall", str(recall_file)],
+        settings=cli_settings,
+        http=FakeOpenAlex({}).http(),
+    )
+
+    assert exit_code == 3
+    err = capsys.readouterr().err
+    assert "--resume" not in err
+    assert "never started" in err or "did not start" in err
+    assert db.execute("SELECT count(*) FROM meta.ingestion_runs").fetchone() == (0,)
+
+
+def test_ingest_resume_failure_names_the_run(db, cli_settings, capsys):
+    """When --resume is given, the failed run is the one named on the command line, regardless
+    of whether it's the newest row in meta.ingestion_runs."""
+    params = {
+        "profile": asdict(PROFILES["smoke"]),
+        "to_date": "2026-09-23",
+        "recall": TWO_QUERY_RECALL.to_dict(),
+    }
+    run_id = runs.start_run(db, "smoke", params)
+
+    api = FakeOpenAlex({})
+    api.fail("large language model", "*", 400)
+
+    exit_code = main(["ingest", "--resume", str(run_id)], settings=cli_settings, http=api.http())
+
+    assert exit_code == 3
+    err = capsys.readouterr().err
+    assert f"run {run_id}" in err
+    assert f"--resume {run_id}" in err
 
 
 def test_probe_prints_summary(db, cli_settings, recall_file, capsys):
