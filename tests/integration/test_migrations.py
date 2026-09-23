@@ -14,6 +14,10 @@ EXPECTED_RELATIONS = {
     "core.works", "core.work_yearly_citations",
     "bridge.work_authors", "bridge.authorship_institutions", "bridge.authorship_countries", "bridge.work_topics",
     "bridge.work_keywords", "bridge.work_references", "bridge.work_institutions", "bridge.author_affiliations",
+    "bridge.institution_relationships", "bridge.authorship_ror_institutions", "bridge.work_countries",
+    "external.ror_organizations", "external.ror_relationships", "external.institution_crosswalk",
+    "external.affiliation_matches", "external.country_profiles", "external.indicators",
+    "external.country_indicators",
 }
 
 
@@ -32,7 +36,7 @@ def relations(settings, dbname) -> set[str]:
     with connect(settings, dbname) as conn:
         rows = conn.execute(
             "SELECT table_schema || '.' || table_name FROM information_schema.tables "
-            "WHERE table_schema IN ('meta', 'core', 'bridge')"
+            "WHERE table_schema IN ('meta', 'core', 'bridge', 'external')"
         ).fetchall()
     return {r[0] for r in rows}
 
@@ -41,7 +45,7 @@ def test_upgrade_creates_every_table_and_view(settings, scratch_db):
     migrate(settings, scratch_db)
     assert relations(settings, scratch_db) == EXPECTED_RELATIONS
     with connect(settings, scratch_db) as conn:
-        assert conn.execute("SELECT version_num FROM meta.schema_versions").fetchone() == ("0002",)
+        assert conn.execute("SELECT version_num FROM meta.schema_versions").fetchone() == ("0003",)
         assert conn.execute("SELECT license FROM meta.data_sources WHERE source_id = 'openalex'").fetchone() == (
             "CC0 1.0",
         )
