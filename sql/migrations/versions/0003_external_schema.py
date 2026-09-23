@@ -20,6 +20,8 @@ UPGRADE = [
          'Versioned data dump from Zenodo (community ror-data), plus the affiliation matching API.'),
         ('worldbank', 'World Bank Open Data', 'https://data.worldbank.org', 'CC BY 4.0',
          'Country metadata and development indicators via the v2 REST API.')
+    ON CONFLICT (source_id) DO UPDATE SET
+        name = EXCLUDED.name, url = EXCLUDED.url, license = EXCLUDED.license, notes = EXCLUDED.notes
     """,
     # ---- ROR ---------------------------------------------------------------------------------
     """

@@ -74,13 +74,15 @@ def test_downgrade_keeps_data_sources_that_runs_reference(settings, scratch_db):
         assert conn.execute(
             "SELECT source_id FROM meta.data_sources WHERE source_id = 'ror'"
         ).fetchone() == ("ror",)
-        # Undo the synthetic run and the catalogue row it kept alive, so the head migration's
-        # unconditional seed INSERT (unchanged by this fix) doesn't collide on re-upgrade below.
-        conn.execute("DELETE FROM meta.ingestion_runs WHERE source_id = 'ror'")
-        conn.execute("DELETE FROM meta.data_sources WHERE source_id = 'ror'")
-        conn.commit()
 
+    # Re-upgrading must succeed even though the 'ror' row survived the downgrade: the seed
+    # INSERT in 0003 has to be idempotent, with no manual cleanup required in between.
     migrate(settings, scratch_db)
+
+    with connect(settings, scratch_db) as conn:
+        assert conn.execute(
+            "SELECT count(*) FROM meta.data_sources WHERE source_id = 'ror'"
+        ).fetchone() == (1,)
 
 
 def test_work_id_format_is_enforced(db):

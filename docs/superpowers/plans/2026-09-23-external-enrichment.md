@@ -12,7 +12,7 @@
 
 - Python `>=3.13,<3.14`，一律用 `uv run ...` 执行；**不新增任何依赖**，本计划用到的库全部已在 `uv.lock` 中。
 - 外部数据只能经 `scholarscope.external` 进入数据库；分析、ML、界面和 Agent 只读 PostgreSQL（架构 §6）。
-- 每张 `external` 表的行都带 `run_id`，指向 `meta.ingestion_runs` 里记录了版本号、校验和或 API 参数的那次运行。
+- `external` 的事实表（`ror_organizations`、`institution_crosswalk`、`affiliation_matches`、`country_profiles`、`country_indicators`）每行都带 `run_id`，指向 `meta.ingestion_runs` 里记录了版本号、校验和或 API 参数的那次运行；`ror_relationships` 随父机构整体重写、`indicators` 是静态代码对照表，这两张表不带 `run_id`。
 - 数据库主机一律写 `127.0.0.1`，不写 `localhost`（Windows 上 `localhost` 先解析到 `::1`，Docker Desktop 不应答）。
 - 迁移是 Alembic 版本文件里的原生 SQL，版本表为 `meta.schema_versions`。
 - 缺失值保留为 NULL，不填充、不丢弃；覆盖率由 `scholarscope quality` 的指标报告（架构 §4.5、§7.1）。
@@ -243,6 +243,8 @@ UPGRADE = [
          'Versioned data dump from Zenodo (community ror-data), plus the affiliation matching API.'),
         ('worldbank', 'World Bank Open Data', 'https://data.worldbank.org', 'CC BY 4.0',
          'Country metadata and development indicators via the v2 REST API.')
+    ON CONFLICT (source_id) DO UPDATE SET
+        name = EXCLUDED.name, url = EXCLUDED.url, license = EXCLUDED.license, notes = EXCLUDED.notes
     """,
     # ---- ROR ---------------------------------------------------------------------------------
     """
