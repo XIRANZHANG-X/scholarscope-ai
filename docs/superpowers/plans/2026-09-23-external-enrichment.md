@@ -23,7 +23,7 @@
 
 ## 本计划依据的实测事实（2026-09-23）
 
-计划中的代码已在真实数据上完整跑通：106 项测试通过（Plan 1 的 62 项加本计划的 44 项），并对**语料数据库的副本**做了真实 API 验收，因此下面的数字都是实测值，不是估算。
+计划中的代码已在真实数据上完整跑通：107 项测试通过（Plan 1 的 62 项加本计划的 45 项，含 Task 1 复查补的一项迁移测试），并对**语料数据库的副本**做了真实 API 验收，因此下面的数字都是实测值，不是估算。
 
 **语料现状**（15,921 篇 RAG 论文，Plan 1 采集）：
 
@@ -404,7 +404,7 @@ def downgrade() -> None:
 - [ ] **Step 4: 确认通过**
 
 Run: `uv run pytest -v`
-Expected: `62 passed`
+Expected: `63 passed`
 
 ```bash
 uv run alembic upgrade head
@@ -798,7 +798,7 @@ Run: `uv run pytest tests/unit/test_ror.py -v`
 Expected: `10 passed`
 
 Run: `uv run pytest`
-Expected: `72 passed`
+Expected: `73 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -945,7 +945,7 @@ Run: `uv run pytest tests/unit/test_ror_match.py -v`
 Expected: `5 passed`
 
 Run: `uv run pytest`
-Expected: `77 passed`
+Expected: `78 passed`
 
 - [ ] **Step 5: 提交**
 
@@ -1203,7 +1203,7 @@ Run: `uv run pytest tests/unit/test_worldbank.py -v`
 Expected: `5 passed`
 
 Run: `uv run pytest`
-Expected: `82 passed`
+Expected: `83 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -1645,7 +1645,7 @@ Run: `uv run pytest tests/integration/test_external_loader.py -v`
 Expected: `11 passed`
 
 Run: `uv run pytest`
-Expected: `93 passed`
+Expected: `94 passed`
 
 - [ ] **Step 5: 提交**
 
@@ -2199,7 +2199,7 @@ Run: `uv run pytest tests/integration/test_external_pipeline.py -v`
 Expected: `10 passed`
 
 Run: `uv run pytest`
-Expected: `103 passed`
+Expected: `104 passed`
 
 - [ ] **Step 6: 提交**
 
@@ -2415,7 +2415,7 @@ Run: `uv run pytest tests/integration/test_cli_end_to_end.py -v`
 Expected: 全部通过（含 3 个新测试）
 
 Run: `uv run pytest`
-Expected: `106 passed`
+Expected: `107 passed`
 
 ```bash
 uv run scholarscope ror --help
@@ -2529,7 +2529,7 @@ uv run scholarscope migrate
 uv run pytest -q
 ```
 
-Expected：`0003 (head)` 已应用；`106 passed`。
+Expected：`0003 (head)` 已应用；`107 passed`。
 
 - [ ] **Step 2: ROR 富化**
 
@@ -2602,7 +2602,7 @@ git commit -m "docs: record Plan 2 enrichment results in the architecture" -m "C
 
 ## 完成标准
 
-- `uv run pytest` 显示 `106 passed`；`uv run pytest -m "not db"` 显示 `55 passed, 51 deselected`。
+- `uv run pytest` 显示 `107 passed`；`uv run pytest -m "not db"` 显示 `55 passed, 52 deselected`。
 - `uv run scholarscope ror` 与 `uv run scholarscope worldbank` 真实运行成功，重跑不产生重复行、不重复调用 API。
 - `scholarscope quality` 的 4 个质量门仍全部 PASS，新增四项指标有真实数值。
 - `任务架构.md` 记录了两个数据源的实际做法、覆盖率与已知缺口（台湾、研发指标滞后）。
