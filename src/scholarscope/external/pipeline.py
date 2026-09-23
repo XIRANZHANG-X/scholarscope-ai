@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,6 +25,8 @@ log = logging.getLogger(__name__)
 BATCH_SIZE = 500
 # ROR asks for courtesy rather than enforcing a hard limit; ~5 requests/second stays well inside it.
 MATCH_PAUSE_S = 0.2
+# Matching thousands of strings takes minutes; cache each block so an interruption keeps the work.
+FLUSH_EVERY = 100
 
 DISTINCT_UNLINKED_AFFILIATIONS = """
 SELECT DISTINCT btrim(raw.affiliation) AS affiliation
@@ -90,8 +92,10 @@ def match_unlinked_affiliations(
 
     Returns (matched, unmatched, organisations added). Results are cached per string — including a
     confident no-match, stored as a NULL ror_id — so a later run never pays for the same string
-    twice. Organisations the match points at are loaded from the dump before the cache references
-    them, because the cache has a foreign key to `external.ror_organizations`.
+    twice. The cache is written every `FLUSH_EVERY` answers rather than at the end, because the loop
+    runs for minutes and an interruption would otherwise throw away every API call it had made.
+    Organisations the match points at are loaded from the dump before the cache references them,
+    because the cache has a foreign key to `external.ror_organizations`.
     """
     affiliations = [row[0] for row in conn.execute(DISTINCT_UNLINKED_AFFILIATIONS).fetchall()]
     if limit is not None:
@@ -99,22 +103,43 @@ def match_unlinked_affiliations(
     if not affiliations:
         return 0, 0, 0
 
-    results: list[tuple[str, AffiliationMatch | None]] = []
+    matched = unmatched = added = 0
+    pending: list[tuple[str, AffiliationMatch | None]] = []
     for index, affiliation in enumerate(affiliations, start=1):
-        results.append((affiliation, match_affiliation(http, affiliation, min_score=min_score)))
-        if index % 100 == 0:
+        pending.append((affiliation, match_affiliation(http, affiliation, min_score=min_score)))
+        if index % FLUSH_EVERY == 0:
+            just_matched, just_added = _cache_flush(conn, dump_path, pending, run_id=run_id)
+            matched, unmatched, added = matched + just_matched, unmatched + _no_matches(pending), added + just_added
+            pending = []
             log.info("run %s: asked ROR about %d of %d affiliation strings", run_id, index, len(affiliations))
         if index < len(affiliations):
             sleep(MATCH_PAUSE_S)
+    if pending:
+        just_matched, just_added = _cache_flush(conn, dump_path, pending, run_id=run_id)
+        matched, unmatched, added = matched + just_matched, unmatched + _no_matches(pending), added + just_added
 
+    log.info("run %s: %d of %d affiliation strings matched (%d organisations added)",
+             run_id, matched, len(affiliations), added)
+    return matched, unmatched, added
+
+
+def _no_matches(results: Sequence[tuple[str, AffiliationMatch | None]]) -> int:
+    return sum(1 for _, match in results if match is None)
+
+
+def _cache_flush(
+    conn: psycopg.Connection,
+    dump_path: Path,
+    results: Sequence[tuple[str, AffiliationMatch | None]],
+    *,
+    run_id: int,
+) -> tuple[int, int]:
+    """Load this flush's organisations, then cache its rows. Returns (matched, organisations added)."""
     referenced = {match.ror_id for _, match in results if match}
     added = load_dump_subset(conn, dump_path, loader.missing_ror_ids(conn, referenced), run_id=run_id)
     with conn.transaction():
-        stored = loader.load_affiliation_matches(conn, results, run_id=run_id)
-    matched = sum(1 for _, match in results if match)
-    log.info("run %s: %d of %d affiliation strings matched (%d organisations added)",
-             run_id, matched, stored, added)
-    return matched, len(results) - matched, added
+        loader.load_affiliation_matches(conn, results, run_id=run_id)
+    return sum(1 for _, match in results if match), added
 
 
 def match_institutions_without_ror(

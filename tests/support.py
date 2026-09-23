@@ -85,15 +85,22 @@ class FakeOpenAlex:
 
 
 class FakeRorApi:
-    """ROR's affiliation endpoint: returns the mapping's ROR id for a known affiliation string."""
+    """ROR's affiliation endpoint: returns the mapping's ROR id for a known affiliation string.
 
-    def __init__(self, matches: dict[str, tuple[str, float]]) -> None:
+    `fail_after` makes every later request fail, standing in for the API or the network dying
+    part-way through a long matching loop.
+    """
+
+    def __init__(self, matches: dict[str, tuple[str, float]], *, fail_after: int | None = None) -> None:
         self.matches = matches
+        self.fail_after = fail_after
         self.requests: list[str] = []
 
     def handler(self, request: httpx.Request) -> httpx.Response:
         affiliation = request.url.params["affiliation"]
         self.requests.append(affiliation)
+        if self.fail_after is not None and len(self.requests) > self.fail_after:
+            raise httpx.ConnectError("ROR is unreachable")
         found = self.matches.get(affiliation)
         if found is None:
             return httpx.Response(200, json={"items": []})

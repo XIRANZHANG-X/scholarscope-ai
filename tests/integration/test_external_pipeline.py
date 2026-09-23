@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import httpx
 import pytest
 
 from scholarscope.external import pipeline
@@ -24,6 +25,18 @@ def corpus(db, works_page):
     with db.transaction():
         load_works(db, [transform_work(w) for w in works_page["results"]], run_id=run_id, query_key="rag")
     return run_id
+
+
+@pytest.fixture
+def many_affiliations(db, corpus) -> list[str]:
+    """200 more distinct unlinked affiliation strings, enough to span several flushes."""
+    strings = [f"Institute {number:03d}" for number in range(200)]
+    db.execute(
+        "INSERT INTO bridge.work_authors (work_id, author_seq, raw_author_name, raw_affiliation_strings) "
+        "VALUES ('W4389984066', 50, 'Test Author', %s)",
+        (strings,),
+    )
+    return strings
 
 
 def scalar(db, query: str):
@@ -113,6 +126,18 @@ def test_enrich_ror_matches_an_institution_openalex_left_without_a_ror_id(db, co
     ).fetchone()
     assert row[:2] == ("02e7b5302", "affiliation_string")
     assert row[2] == pytest.approx(0.91)
+
+
+def test_affiliation_matching_keeps_completed_flushes_when_ror_dies(db, corpus, many_affiliations, tmp_path):
+    """A dying API must not discard the strings already asked about: the next run skips them."""
+    api = FakeRorApi({}, fail_after=149)
+
+    with pytest.raises(httpx.ConnectError):
+        pipeline.enrich_ror(db, api.http(), dump_dir=tmp_path, dump_path=DUMP, sleep=lambda _s: None)
+
+    assert len(api.requests) == 150
+    assert scalar(db, "SELECT count(*) FROM external.affiliation_matches") == 100  # one full flush
+    assert scalar(db, "SELECT status FROM meta.ingestion_runs ORDER BY run_id DESC LIMIT 1") == "failed"
 
 
 def test_failing_ror_run_is_marked_failed_and_reraised(db, corpus, tmp_path):
