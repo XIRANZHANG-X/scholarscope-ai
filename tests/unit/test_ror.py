@@ -87,6 +87,18 @@ def test_iter_csv_rows_rejects_an_archive_without_csv(tmp_path):
         list(iter_csv_rows(broken))
 
 
+def test_iter_csv_rows_rejects_a_truncated_archive(tmp_path):
+    truncated = tmp_path / "half.zip"
+    truncated.write_bytes(DUMP.read_bytes()[: DUMP.stat().st_size // 2])
+    with pytest.raises(RorDumpError, match="not a readable zip archive"):
+        list(iter_csv_rows(truncated))
+
+
+def test_sha256_of_a_path_that_does_not_exist_is_a_dump_error(tmp_path):
+    with pytest.raises(RorDumpError, match="cannot be read"):
+        sha256_of(tmp_path / "typo.zip")
+
+
 def test_parse_organization_of_a_company():
     organization = parse_organization(rows_by_id()["00njsd438"]).organization
     assert organization == {

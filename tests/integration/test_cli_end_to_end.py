@@ -139,6 +139,16 @@ def test_ror_command_enriches_and_reports(db, works_page, cli_settings, capsys):
     assert db.execute("SELECT count(*) FROM external.institution_crosswalk").fetchone() == (3,)
 
 
+def test_ror_command_exits_3_when_the_dump_path_is_wrong(db, cli_settings, capsys, tmp_path):
+    """A typo'd --dump must be reported like any other dump failure, not as a traceback."""
+    exit_code = main(
+        ["ror", "--dump", str(tmp_path / "typo.zip")], settings=cli_settings, http=FakeRorApi({}).http()
+    )
+
+    assert exit_code == 3
+    assert "ROR enrichment failed" in capsys.readouterr().err
+
+
 def test_worldbank_command_enriches_and_reports(db, cli_settings, capsys):
     api = FakeWorldBankApi(
         [world_bank_country("SG", "SGP", "Singapore")],

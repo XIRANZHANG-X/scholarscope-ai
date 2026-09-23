@@ -65,10 +65,14 @@ def latest_release(http: httpx.Client) -> RorRelease:
 
 
 def sha256_of(path: Path) -> str:
+    """A typo'd --dump is a dump problem, so it surfaces as RorDumpError like every other one."""
     digest = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(_CHUNK), b""):
-            digest.update(chunk)
+    try:
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(_CHUNK), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise RorDumpError(f"ROR dump {path} cannot be read: {exc}") from exc
     return digest.hexdigest()
 
 
@@ -88,7 +92,11 @@ def download(http: httpx.Client, release: RorRelease, directory: Path) -> tuple[
 
 def iter_csv_rows(dump_path: Path) -> Iterator[dict[str, str]]:
     """Yield the dump's CSV rows one at a time (the file is too large to hold in memory)."""
-    with zipfile.ZipFile(dump_path) as archive:
+    try:
+        archive = zipfile.ZipFile(dump_path)
+    except (OSError, zipfile.BadZipFile) as exc:
+        raise RorDumpError(f"{dump_path} is not a readable zip archive: {exc}") from exc
+    with archive:
         names = [n for n in archive.namelist() if n.endswith(".csv")]
         if not names:
             raise RorDumpError(f"{dump_path.name} contains no CSV member")
