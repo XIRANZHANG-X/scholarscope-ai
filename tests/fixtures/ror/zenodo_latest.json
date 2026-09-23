@@ -1,0 +1,23 @@
+{
+ "hits": {
+  "hits": [
+   {
+    "id": 22902037,
+    "doi": "10.5281/zenodo.22902037",
+    "metadata": {
+     "title": "ROR Data",
+     "publication_date": "2026-09-22"
+    },
+    "files": [
+     {
+      "key": "v2.13-2026-09-22-ror-data.zip",
+      "size": 37540961,
+      "links": {
+       "self": "https://zenodo.org/api/records/22902037/files/v2.13-2026-09-22-ror-data.zip/content"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}
