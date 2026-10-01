@@ -32,60 +32,86 @@ NTU 课程项目。我们手上有一份关于 **RAG（检索增强生成）** �
 
 ## 二、怎么拿到数据
 
-### 路线 A：只要数据，不碰 Docker 和数据库 ← 推荐给用 Tableau / Excel / R 的同学
+> **先说一条课程硬性要求**：老师要求「数据库是分析访问数据的唯一渠道」「必须用 SQL 获取分析数据」
+> 「分析工具连接数据库」。
+>
+> 所以界线是这样的——**CSV 可以用来快速看一眼数据长什么样，但凡是要进 PPT 的图、要交的分析，
+> 都必须是从数据库里查出来的。** 好在这不麻烦：恢复一份数据库只要一条命令，
+> 之后 Tableau、Python、R 都能实时连上去。
 
-去 [**Releases**](https://github.com/XIRANZHANG-X/scholarscope-ai/releases) 下载
-`scholarscope-csv.zip`，解压就是 19 个 CSV 文件，UTF-8 编码，带表头。
-
-**Tableau**：直接「连接 → 文本文件」选 `works.csv` 即可。要做关联的话，
-用 `work_id` 把 `works.csv` 和 `work_authors.csv`、`work_countries.csv` 连起来；
-用 `country_code` 把 `work_countries.csv` 和 `country_indicators_wide.csv` 连起来。
-
-**Excel**：注意用「数据 → 从文本/CSV」导入并选 UTF-8，
-直接双击打开中文和特殊字符会乱码。`work_abstracts.csv` 有 2 万行摘要，Excel 打开会很慢，按需再开。
-
-**Python / R**：
-
-```python
-import pandas as pd
-works = pd.read_csv("works.csv", parse_dates=["publication_date"])
-```
-
-```r
-works <- readr::read_csv("works.csv")
-```
-
-**不需要装 Docker，不需要数据库，不需要 Python 环境。**
-
-### 路线 B：要完整数据库（能写 SQL、改数据、跑项目代码）
+### 路线 A：本地跑数据库 ← 做分析的都走这条
 
 ```bash
 git clone https://github.com/XIRANZHANG-X/scholarscope-ai.git
 cd scholarscope-ai
-uv sync                         # 装依赖（需要先装 uv）
 cp .env.example .env            # 改掉里面的密码
-docker compose up -d --wait     # 起 PostgreSQL
+docker compose up -d --wait     # 起 PostgreSQL（需要先装 Docker Desktop）
 ```
 
-然后从 Releases 下载 `scholarscope.dump`（13 MB），恢复进去：
+从 [**Releases**](https://github.com/XIRANZHANG-X/scholarscope-ai/releases) 下载
+`scholarscope.dump`（12 MB），恢复进去：
 
 ```bash
 docker compose exec -T postgres pg_restore -U scholarscope -d scholarscope --clean --if-exists --no-owner < scholarscope.dump
 ```
 
-想用图形界面点着看表：`docker compose --profile ui up -d`，然后开 <http://127.0.0.1:5050>，
-左边 **Servers → ScholarScope (local)** 已经配好了，密码就是你 `.env` 里的 `POSTGRES_PASSWORD`。
-表在 **Databases → scholarscope → Schemas → core / bridge / external / meta → Tables**。
+完事。现在你本地有一个和我这边一模一样的数据库了。
 
-嫌树太深就用 **Tools → Query Tool**（`Alt+Shift+Q`）直接写 SQL：
+**连接参数**（下面所有工具都用这组）：
 
-```sql
-SELECT * FROM core.works LIMIT 100;
+| 项 | 值 |
+|---|---|
+| 主机 | `127.0.0.1`（**不要写 localhost**，Windows 上会解析到 `::1` 然后卡住） |
+| 端口 | `5432` |
+| 数据库 | `scholarscope` |
+| 用户 | `scholarscope` |
+| 密码 | 你 `.env` 里设的那个 |
+
+### 各个工具怎么连
+
+**Tableau Desktop**（学生可[免费申请一年](https://www.tableau.com/academic/students)）
+连接 → 到服务器 → **PostgreSQL**，填上面那组参数。
+**连接方式一定要选 `Live`（实时），不要选 `Extract`**——Live 才是真的在查数据库。
+连上后可以直接拖表，也可以用「自定义 SQL」写查询，后者更符合课程要求。
+
+**Python**
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+engine = create_engine("postgresql+psycopg://scholarscope:你的密码@127.0.0.1:5432/scholarscope")
+df = pd.read_sql("SELECT publication_year, count(*) AS works FROM core.works GROUP BY 1 ORDER BY 1", engine)
 ```
+
+**R**
+
+```r
+con <- DBI::dbConnect(RPostgres::Postgres(), host = "127.0.0.1", port = 5432,
+                      dbname = "scholarscope", user = "scholarscope", password = "你的密码")
+df  <- DBI::dbGetQuery(con, "SELECT publication_year, count(*) AS works FROM core.works GROUP BY 1 ORDER BY 1")
+```
+
+**点着看表 / 练 SQL**：`docker compose --profile ui up -d`，然后开 <http://127.0.0.1:5050>。
+左边 **Servers → ScholarScope (local)** 已经配好。嫌目录树太深就用
+**Tools → Query Tool**（`Alt+Shift+Q`）直接写 SQL。
+
+**PyCharm Professional / DataGrip** 自带数据库工具，填上面那组参数即可。
+
+### 路线 B：CSV 压缩包 ← 只用来快速看一眼，别用它出最终结果
+
+从 Releases 下载 `scholarscope-csv.zip`（13 MB），解压是 19 个 CSV + 数据字典，UTF-8 带表头。
+不需要 Docker、不需要数据库，Excel 双击前记得用「数据 → 从文本/CSV」导入并选 UTF-8。
+
+**它的定位是「装环境之前先看看数据长什么样」，以及给暂时装不上 Docker 的同学兜底。**
+真要做分析了，还是回路线 A——否则交上去的图说不清是从哪来的。
+
+这些 CSV 本身是用 [`scripts/export_csv.py`](scripts/export_csv.py) 从数据库里用 SQL 导出来的，
+数据更新后重跑一遍即可。
 
 ### 路线 C：自己从头采一遍（想了解 ETL 过程）
 
 ```bash
+uv sync
 uv run scholarscope migrate
 uv run scholarscope probe                       # 探查规模
 uv run scholarscope ingest --profile standard   # 全部论文，约 $0.16、7 分钟
@@ -97,11 +123,31 @@ uv run scholarscope quality                     # 质量检查
 OpenAlex 的免费 key 在 <https://openalex.org/settings/api> 领，每天 $1 额度。
 命令详情见 [`docs/development.md`](docs/development.md)。
 
-CSV 是用 [`scripts/export_csv.py`](scripts/export_csv.py) 从数据库导出的，数据更新后重跑一遍就行。
+---
+
+## 三、关于做网页：Tableau 有个坑
+
+如果最终要交一个**能联网访问的网页**，这里有个必须提前知道的限制：
+
+| 问题 | 答案 |
+|---|---|
+| Tableau 能实时连 PostgreSQL 吗？ | **能**，选 Live 连接即可 |
+| Tableau 做的图能发到网上、并且保持实时吗？ | **不能。** Tableau Public（免费版）**只支持 Extract 快照，不支持 Live 连接**，而且上传的数据会**完全公开** |
+| 那要怎样才能实时？ | Tableau Server / Cloud，付费 |
+
+所以建议**分工使用**：
+
+- **Tableau** —— 用来探索数据、出 PPT 里的静态图。连本地数据库，Live 连接，截图进 PPT。
+- **Streamlit + Plotly** —— 用来做那个要联网的网页。它直接连 PostgreSQL、用 SQL 取数、
+  实时渲染，天然满足课程要求。依赖已经装好了。
+
+如果后面想让网页和 Tableau Cloud 都能连同一个库，可以把数据库搬到免费的云端 PostgreSQL
+（Neon、Supabase 之类，12 MB 的数据离免费额度差得远），这样全组共用一个数据源。
+这是个待讨论的选项，不是已经定的事。
 
 ---
 
-## 三、可以做什么——这部分开放讨论
+## 四、可以做什么——这部分开放讨论
 
 下面是我看数据时觉得能做的方向，**不是任务分配，只是起个头**。
 有想法的直接开 issue，或者在群里说。
@@ -140,7 +186,7 @@ CSV 是用 [`scripts/export_csv.py`](scripts/export_csv.py) 从数据库导出�
 
 ---
 
-## 四、仓库里有什么
+## 五、仓库里有什么
 
 ```
 ├── README.md              ← 本文件
@@ -156,10 +202,13 @@ CSV 是用 [`scripts/export_csv.py`](scripts/export_csv.py) 从数据库导出�
 
 ---
 
-## 五、几条规矩
+## 六、几条规矩
 
 - **`.env` 永远不要提交**，里面有数据库密码。模板是 `.env.example`。
 - **`data/` 不提交**，几十 MB，从 Releases 下载或用命令重新生成。
 - **改数据库结构要写 migration**，不要手工改表，做法见 `docs/development.md`。
 - **改了 `src/` 的代码，提交前跑一下 `uv run pytest`**，现在 117 项全过。
-- 纯做分析、画图、写 SQL 的话以上都不用管——下载 CSV 就行。
+- **最终产出必须能追溯到数据库。** 课程要求「必须用 SQL 获取分析数据」，所以进 PPT 的图、
+  交上去的分析，取数都要走数据库。CSV 只是用来先看看数据长什么样的。
+- 写出来的 SQL 请存成文件提交（别只留在 Tableau 的自定义 SQL 框或者 notebook 里），
+  PPT 有一页专门要展示代表性 SQL。
