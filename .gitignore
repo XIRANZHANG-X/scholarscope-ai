@@ -7,8 +7,10 @@ __pycache__/
 # Local configuration and secrets (template: .env.example)
 .env
 
-# Downloaded API data; rebuild with `uv run scholarscope ingest`
-data/raw/
+# Downloaded API pages (`scholarscope ingest`) and generated exports
+# (`scripts/export_csv.py`, `pg_dump`). Both are rebuildable; the shareable
+# copies are attached to a GitHub release instead.
+data/
 
 # Editor and note-vault settings
 .idea/
