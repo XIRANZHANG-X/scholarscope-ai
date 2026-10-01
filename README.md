@@ -69,6 +69,29 @@ OpenAlex 的免费 key 在 <https://openalex.org/settings/api> 领，每天 $1 �
 
 命令的详细说明、退出码、费用见 [`docs/development.md`](docs/development.md)。
 
+### 用图形界面看数据
+
+```bash
+docker compose --profile ui up -d     # 多起一个 pgAdmin
+```
+
+然后打开 <http://127.0.0.1:5050>。左边 **Servers → ScholarScope (local)** 已经预先配好了，
+点开时输入你 `.env` 里的 `POSTGRES_PASSWORD` 即可。表在
+**Databases → scholarscope → Schemas → 选一个 schema → Tables**，
+右键任意表 → *View/Edit Data* → *All Rows* 就能看到内容。
+
+不想装图形界面的话，命令行一样能看：
+
+```bash
+docker compose exec postgres psql -U scholarscope -d scholarscope
+```
+
+常用命令：`\dn` 列出 schema、`\dt core.*` 列出 core 里的表、`\d core.works` 看某张表的字段、
+`\q` 退出。
+
+PyCharm Professional 和 DataGrip 自带数据库工具，连接参数是
+`127.0.0.1:5432`、数据库 `scholarscope`、用户 `scholarscope`。
+
 ---
 
 ## 分工：剩下的五块

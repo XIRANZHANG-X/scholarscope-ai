@@ -1,6 +1,7 @@
 # ScholarScope AI local services (architecture §12).
 #   docker compose up -d                   -> PostgreSQL only (all ETL and analysis work)
 #   docker compose --profile graph up -d   -> PostgreSQL + Neo4j (graph milestone)
+#   docker compose --profile ui up -d      -> PostgreSQL + pgAdmin on http://127.0.0.1:5050
 # Images are pinned to the tags verified on 2026-09-22; offline backups live in D:\Docker\images\.
 
 name: scholarscope
@@ -34,6 +35,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
+
+  # Browse the tables without installing anything. Opt-in, local-only, holds no project data.
+  pgadmin:
+    image: dpage/pgadmin4:9.9
+    profiles: ["ui"]
+    environment:
+      # pgAdmin validates this as a real address: it needs a dot and rejects reserved TLDs
+      # such as .local. It is only a local login name; no mail is ever sent.
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "127.0.0.1:5050:80"
+    volumes:
+      # Pre-registers the connection, so the server is already in the tree on first login.
+      - ./config/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   neo4j:
     image: neo4j:2026.08.1-community-trixie

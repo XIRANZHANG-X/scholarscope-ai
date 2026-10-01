@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "ScholarScope (local)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "scholarscope",
+      "Username": "scholarscope",
+      "SSLMode": "prefer",
+      "Comment": "Pre-registered by compose; the password is the POSTGRES_PASSWORD from your .env."
+    }
+  }
+}
