@@ -51,10 +51,15 @@ def col(data: list[tuple], i: int) -> list:
 # --------------------------------------------------------------------------------------------
 
 def fig_themes(conn):
+    # Latest probe per phrase only: the RAG phrase was probed twice, so a plain sum doubles it.
     data = rows(conn, """
         SELECT theme, bucket::int AS year, sum(works_count) AS works
-        FROM meta.recall_probes
-        WHERE dimension = 'publication_year' AND field_scope = 'cs'
+        FROM (
+            SELECT DISTINCT ON (query_key, bucket) theme, bucket, works_count
+            FROM meta.recall_probes
+            WHERE dimension = 'publication_year' AND field_scope = 'cs'
+            ORDER BY query_key, bucket, probed_at DESC
+        ) latest
         GROUP BY 1, 2 ORDER BY 1, 2
     """)
     names = {"llm": "LLM", "agents": "Agents", "rag": "RAG", "foundation_models": "Foundation Models"}

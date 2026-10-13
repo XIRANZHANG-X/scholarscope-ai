@@ -132,9 +132,15 @@ EXPORTS: list[tuple[str, str]] = [
         ORDER BY r.institution_id, r.related_institution_id
     """),
     # The macro context: how the four themes grew. Counts only - we downloaded RAG's papers alone.
+    # A phrase probed more than once keeps its latest probe only: the RAG phrase sits in both
+    # recall.toml and context.toml, and summing every row would count it twice.
     ("theme_year_counts.csv", """
         SELECT theme, field_scope, bucket AS year, sum(works_count) AS works
-        FROM meta.recall_probes WHERE dimension = 'publication_year'
+        FROM (
+            SELECT DISTINCT ON (query_key, field_scope, bucket) theme, field_scope, bucket, works_count
+            FROM meta.recall_probes WHERE dimension = 'publication_year'
+            ORDER BY query_key, field_scope, bucket, probed_at DESC
+        ) latest
         GROUP BY 1,2,3 ORDER BY 1,2,3
     """),
     ("data_quality.csv", """
