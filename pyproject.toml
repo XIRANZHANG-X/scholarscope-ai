@@ -32,6 +32,10 @@ dependencies = [
     # Data product UI (section 11)
     "streamlit>=1.64",
     "plotly>=7.1",
+    "matplotlib>=3.11.2",
+    "statsmodels>=0.15.0",
+    "scipy>=1.18.1",
+    "python-dotenv>=1.2.3",
 ]
 
 [project.scripts]

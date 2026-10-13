@@ -1,0 +1,161 @@
+﻿country_code,outcome,country,region,papers,predicted_papers,papers_per_m,predicted_per_m,actual_over_predicted,gdp_pc,rd_pct,pop_m,stud_resid,cooks_d,leverage,flag_residual,flag_influential
+HK,total,"Hong Kong SAR, China",East Asia & Pacific,276,57.913,36.805,7.723,4.766,56983.066,1.126,7.499,3.371,1.146,0.113,True,True
+MO,total,"Macao SAR, China",East Asia & Pacific,37,9.637,53.944,14.051,3.839,75901.746,0.311,0.686,2.848,1.809,0.26,True,True
+IN,total,India,South Asia,1106,344.794,0.756,0.236,3.208,2702.48,0.646,1463.866,2.566,1.351,0.26,True,True
+SG,total,Singapore,East Asia & Pacific,203,78.5,33.218,12.845,2.586,98813.979,1.808,6.111,1.79,0.153,0.089,False,True
+LK,total,Sri Lanka,South Asia,39,16.694,1.793,0.767,2.336,5002.079,0.105,21.756,1.543,0.162,0.132,False,True
+TN,total,Tunisia,"Middle East, North Africa, Afghanistan & Pakistan",28,12.19,2.267,0.987,2.297,4656.638,0.747,12.349,1.517,0.211,0.174,False,True
+CN,total,China,East Asia & Pacific,2494,1329.7,1.773,0.945,1.876,13861.97,2.577,1406.585,1.18,0.11,0.169,False,True
+LU,total,Luxembourg,Europe & Central Asia,33,18.017,48.037,26.227,1.832,147252.179,1.07,0.687,1.038,0.049,0.109,False,False
+ID,total,Indonesia,East Asia & Pacific,253,141.427,0.885,0.495,1.789,5059.626,0.281,285.721,1.036,0.047,0.105,False,False
+VN,total,Viet Nam,East Asia & Pacific,116,64.931,1.142,0.639,1.787,5065.991,0.415,101.599,0.996,0.02,0.052,False,False
+ME,total,Montenegro,Europe & Central Asia,5,2.603,8.024,4.178,1.921,14816.838,0.363,0.623,0.886,0.023,0.075,False,False
+UA,total,Ukraine,Europe & Central Asia,57,33.708,1.462,0.865,1.691,5865.885,0.37,38.98,0.876,0.012,0.042,False,False
+CA,total,Canada,North America,377,230.489,9.051,5.534,1.636,55697.664,1.791,41.652,0.842,0.015,0.057,False,False
+GR,total,Greece,Europe & Central Asia,72,43.528,6.914,4.18,1.654,26948.007,1.494,10.414,0.84,0.01,0.04,False,False
+MK,total,North Macedonia,Europe & Central Asia,8,4.677,4.393,2.569,1.71,10489.926,0.374,1.821,0.785,0.016,0.07,False,False
+KR,total,"Korea, Rep.",East Asia & Pacific,316,216.859,6.114,4.196,1.457,36226.966,4.944,51.685,0.642,0.013,0.088,False,False
+SY,total,Syrian Arab Republic,"Middle East, North Africa, Afghanistan & Pakistan",8,5.309,0.312,0.207,1.507,1056.783,0.042,25.62,0.61,0.016,0.12,False,False
+GB,total,United Kingdom,Europe & Central Asia,502,368.178,7.224,5.299,1.363,57601.962,2.676,69.487,0.515,0.005,0.057,False,False
+TW,total,Taiwan,East Asia & Pacific,156,121.26,6.696,5.204,1.286,39492.0,4.1,23.299,0.414,0.004,0.068,False,False
+PK,total,Pakistan,"Middle East, North Africa, Afghanistan & Pakistan",64,50.899,0.251,0.199,1.257,1595.909,0.164,255.22,0.374,0.004,0.087,False,False
+US,total,United States,North America,2306,1867.172,6.747,5.463,1.235,90026.516,3.447,341.785,0.364,0.007,0.152,False,False
+AU,total,Australia,East Asia & Pacific,230,188.402,8.329,6.823,1.221,65129.723,1.858,27.614,0.321,0.001,0.041,False,False
+MU,total,Mauritius,Sub-Saharan Africa,5,3.939,4.02,3.167,1.269,12991.294,0.262,1.244,0.314,0.002,0.051,False,False
+BG,total,Bulgaria,Europe & Central Asia,27,22.577,4.197,3.509,1.196,20328.167,0.792,6.433,0.273,0.001,0.026,False,False
+IT,total,Italy,Europe & Central Asia,262,243.95,4.447,4.141,1.074,43308.64,1.379,58.916,0.112,0.0,0.04,False,False
+MD,total,Moldova,Europe & Central Asia,5,4.69,2.118,1.987,1.066,8621.717,0.216,2.361,0.083,0.0,0.044,False,False
+MY,total,Malaysia,East Asia & Pacific,65,64.447,1.807,1.791,1.009,13124.555,1.012,35.978,0.013,0.0,0.019,False,False
+DE,total,Germany,Europe & Central Asia,448,448.878,5.366,5.376,0.998,60496.435,3.154,83.491,-0.003,0.0,0.047,False,False
+EG,total,"Egypt, Arab Rep.","Middle East, North Africa, Afghanistan & Pakistan",53,54.664,0.448,0.462,0.97,3085.807,1.018,118.366,-0.048,0.0,0.087,False,False
+RS,total,Serbia,Europe & Central Asia,18,18.698,2.748,2.855,0.963,15262.046,0.94,6.549,-0.056,0.0,0.035,False,False
+NG,total,Nigeria,Sub-Saharan Africa,39,41.4,0.164,0.174,0.942,1224.254,0.284,237.528,-0.092,0.0,0.078,False,False
+AE,total,United Arab Emirates,"Middle East, North Africa, Afghanistan & Pakistan",70,75.868,6.08,6.59,0.923,50273.513,1.495,11.513,-0.121,0.0,0.019,False,False
+FI,total,Finland,Europe & Central Asia,46,50.413,8.147,8.928,0.912,56148.581,3.094,5.646,-0.138,0.0,0.044,False,False
+NL,total,Netherlands,Europe & Central Asia,134,151.061,7.408,8.352,0.887,73683.917,2.267,18.088,-0.181,0.0,0.027,False,False
+RO,total,Romania,Europe & Central Asia,48,55.206,2.524,2.902,0.869,22537.953,0.517,19.02,-0.207,0.0,0.021,False,False
+IR,total,"Iran, Islamic Rep.","Middle East, North Africa, Afghanistan & Pakistan",42,52.309,0.454,0.566,0.803,3924.38,0.727,92.418,-0.324,0.001,0.043,False,False
+CH,total,Switzerland,Europe & Central Asia,101,127.296,11.108,14.0,0.793,114769.012,3.222,9.092,-0.344,0.001,0.032,False,False
+AT,total,Austria,Europe & Central Asia,64,81.329,6.95,8.832,0.787,62930.035,3.255,9.208,-0.353,0.001,0.031,False,False
+BA,total,Bosnia and Herzegovina,Europe & Central Asia,5,6.767,1.592,2.155,0.739,10381.846,0.214,3.14,-0.381,0.001,0.031,False,False
+PT,total,Portugal,Europe & Central Asia,39,51.819,3.609,4.796,0.753,32081.811,1.695,10.805,-0.41,0.001,0.019,False,False
+TH,total,Thailand,East Asia & Pacific,56,75.903,0.782,1.06,0.738,8056.564,0.936,71.62,-0.441,0.001,0.021,False,False
+NO,total,Norway,Europe & Central Asia,51,71.133,9.089,12.678,0.717,94594.193,1.851,5.611,-0.48,0.001,0.024,False,False
+SE,total,Sweden,Europe & Central Asia,65,91.976,6.134,8.68,0.707,63133.213,3.6,10.597,-0.504,0.002,0.03,False,False
+BR,total,Brazil,Latin America & Caribbean,161,228.284,0.757,1.073,0.705,10713.286,1.194,212.812,-0.509,0.001,0.023,False,False
+NZ,total,New Zealand,East Asia & Pacific,28,40.97,5.259,7.694,0.683,49591.041,1.548,5.325,-0.536,0.001,0.017,False,False
+TR,total,Turkiye,Europe & Central Asia,117,172.763,1.362,2.012,0.677,18599.442,1.422,85.879,-0.561,0.001,0.015,False,False
+HR,total,Croatia,Europe & Central Asia,13,19.886,3.354,5.13,0.654,27103.912,1.386,3.876,-0.579,0.002,0.029,False,False
+SA,total,Saudi Arabia,"Middle East, North Africa, Afghanistan & Pakistan",86,131.882,2.326,3.567,0.652,34536.656,0.635,36.974,-0.615,0.002,0.031,False,False
+HU,total,Hungary,Europe & Central Asia,25,39.023,2.628,4.102,0.641,25907.474,1.377,9.514,-0.619,0.001,0.016,False,False
+ES,total,Spain,Europe & Central Asia,127,195.848,2.573,3.968,0.648,38627.247,1.494,49.355,-0.62,0.001,0.018,False,False
+AZ,total,Azerbaijan,Europe & Central Asia,8,13.274,0.781,1.295,0.603,7410.723,0.208,10.247,-0.658,0.002,0.023,False,False
+UZ,total,Uzbekistan,Europe & Central Asia,13,21.284,0.351,0.574,0.611,3968.272,0.104,37.053,-0.67,0.004,0.041,False,False
+CZ,total,Czechia,Europe & Central Asia,34,57.255,3.123,5.259,0.594,35917.272,1.834,10.887,-0.723,0.001,0.015,False,False
+DZ,total,Algeria,"Middle East, North Africa, Afghanistan & Pakistan",24,41.017,0.506,0.865,0.585,6051.003,0.444,47.435,-0.735,0.001,0.015,False,False
+JP,total,Japan,East Asia & Pacific,235,414.034,1.905,3.356,0.568,35951.045,3.441,123.367,-0.801,0.003,0.026,False,False
+DK,total,Denmark,Europe & Central Asia,37,67.285,6.157,11.197,0.55,76970.154,3.048,6.009,-0.825,0.003,0.022,False,False
+IE,total,Ireland,Europe & Central Asia,48,88.591,8.752,16.153,0.542,131592.463,1.588,5.484,-0.851,0.004,0.028,False,False
+MM,total,Myanmar,East Asia & Pacific,6,11.879,0.109,0.217,0.505,1488.875,0.023,54.851,-0.881,0.013,0.092,False,False
+KZ,total,Kazakhstan,Europe & Central Asia,20,38.316,0.96,1.838,0.522,14692.133,0.162,20.844,-0.885,0.006,0.043,False,False
+PH,total,Philippines,East Asia & Pacific,31,60.1,0.265,0.515,0.516,4170.723,0.276,116.787,-0.901,0.003,0.02,False,False
+RU,total,Russian Federation,Europe & Central Asia,123,238.196,0.857,1.66,0.516,17546.609,0.937,143.513,-0.915,0.002,0.017,False,False
+SK,total,Slovak Republic,Europe & Central Asia,13,26.189,2.401,4.837,0.496,28543.665,1.034,5.414,-0.916,0.002,0.012,False,False
+QA,total,Qatar,"Middle East, North Africa, Afghanistan & Pakistan",16,31.945,5.383,10.748,0.501,72524.907,0.681,2.972,-0.92,0.003,0.024,False,False
+SI,total,Slovenia,Europe & Central Asia,8,16.513,3.754,7.749,0.484,37376.222,2.134,2.131,-0.928,0.005,0.037,False,False
+PL,total,Poland,Europe & Central Asia,62,122.374,1.702,3.359,0.507,28419.578,1.555,36.436,-0.929,0.001,0.009,False,False
+EE,total,Estonia,Europe & Central Asia,5,10.761,3.659,7.875,0.465,34417.632,1.839,1.366,-0.938,0.006,0.042,False,False
+IL,total,Israel,"Middle East, North Africa, Afghanistan & Pakistan",45,90.47,4.445,8.937,0.497,60336.848,6.346,10.123,-0.964,0.007,0.043,False,False
+CY,total,Cyprus,Europe & Central Asia,5,11.377,3.648,8.3,0.439,41783.09,0.681,1.371,-0.99,0.003,0.019,False,False
+LT,total,Lithuania,Europe & Central Asia,8,17.824,2.769,6.17,0.449,32958.671,1.05,2.889,-1.007,0.003,0.016,False,False
+BY,total,Belarus,Europe & Central Asia,7,17.118,0.77,1.884,0.409,10279.255,0.587,9.086,-1.101,0.003,0.015,False,False
+FR,total,France,Europe & Central Asia,139,316.193,2.023,4.601,0.44,48985.731,2.178,68.72,-1.112,0.003,0.016,False,False
+OM,total,Oman,"Middle East, North Africa, Afghanistan & Pakistan",7,18.358,1.274,3.341,0.381,19947.397,0.39,5.495,-1.178,0.002,0.012,False,False
+BE,total,Belgium,Europe & Central Asia,28,97.262,2.345,8.145,0.288,60750.274,3.272,11.942,-1.561,0.003,0.011,False,False
+CL,total,Chile,Latin America & Caribbean,13,46.845,0.655,2.359,0.278,17994.591,0.392,19.86,-1.564,0.003,0.009,False,False
+IQ,total,Iraq,"Middle East, North Africa, Afghanistan & Pakistan",8,29.752,0.17,0.633,0.269,5409.679,0.041,47.021,-1.602,0.02,0.059,False,False
+ZA,total,South Africa,Sub-Saharan Africa,14,57.797,0.216,0.893,0.242,6597.715,0.615,64.747,-1.707,0.002,0.007,False,False
+MX,total,Mexico,Latin America & Caribbean,35,164.548,0.265,1.247,0.213,13889.234,0.254,131.947,-1.886,0.008,0.022,False,False
+PE,total,Peru,Latin America & Caribbean,8,41.889,0.231,1.211,0.191,9684.412,0.176,34.577,-1.905,0.005,0.014,False,False
+AR,total,Argentina,Latin America & Caribbean,14,81.808,0.305,1.784,0.171,14898.089,0.601,45.851,-2.04,0.001,0.004,True,False
+CO,total,Colombia,Latin America & Caribbean,9,56.379,0.168,1.055,0.16,8561.621,0.289,53.426,-2.077,0.003,0.006,True,False
+HK,per_capita,"Hong Kong SAR, China",East Asia & Pacific,276,61.059,36.805,8.142,4.52,56983.066,1.126,7.499,3.039,1.159,0.11,True,True
+MO,per_capita,"Macao SAR, China",East Asia & Pacific,37,9.334,53.944,13.608,3.964,75901.746,0.311,0.686,2.827,2.72,0.281,True,True
+TN,per_capita,Tunisia,"Middle East, North Africa, Afghanistan & Pakistan",28,7.292,2.267,0.591,3.84,4656.638,0.747,12.349,2.419,0.599,0.109,True,True
+ME,per_capita,Montenegro,Europe & Central Asia,5,1.431,8.024,2.297,3.494,14816.838,0.363,0.623,1.626,0.039,0.021,False,False
+SG,per_capita,Singapore,East Asia & Pacific,203,83.317,33.218,13.633,2.436,98813.979,1.808,6.111,1.566,0.145,0.086,False,True
+IN,per_capita,India,South Asia,1106,493.22,0.756,0.337,2.242,2702.48,0.646,1463.866,1.458,0.217,0.147,False,True
+MK,per_capita,North Macedonia,Europe & Central Asia,8,2.873,4.393,1.578,2.784,10489.926,0.374,1.821,1.458,0.037,0.027,False,False
+LU,per_capita,Luxembourg,Europe & Central Asia,33,15.631,48.037,22.754,2.111,147252.179,1.07,0.687,1.249,0.115,0.118,False,True
+LK,per_capita,Sri Lanka,South Asia,39,18.982,1.793,0.872,2.055,5002.079,0.105,21.756,1.212,0.115,0.125,False,True
+GR,per_capita,Greece,Europe & Central Asia,72,36.263,6.914,3.482,1.985,26948.007,1.494,10.414,1.112,0.022,0.033,False,False
+UA,per_capita,Ukraine,Europe & Central Asia,57,32.999,1.462,0.847,1.727,5865.885,0.37,38.98,0.867,0.017,0.045,False,False
+MU,per_capita,Mauritius,Sub-Saharan Africa,5,2.614,4.02,2.101,1.913,12991.294,0.262,1.244,0.83,0.01,0.03,False,False
+VN,per_capita,Viet Nam,East Asia & Pacific,116,72.153,1.142,0.71,1.608,5065.991,0.415,101.599,0.755,0.013,0.048,False,False
+SY,per_capita,Syrian Arab Republic,"Middle East, North Africa, Afghanistan & Pakistan",8,4.871,0.312,0.19,1.642,1056.783,0.042,25.62,0.719,0.037,0.136,False,False
+KR,per_capita,"Korea, Rep.",East Asia & Pacific,316,204.24,6.114,3.952,1.547,36226.966,4.944,51.685,0.712,0.024,0.094,False,False
+TW,per_capita,Taiwan,East Asia & Pacific,156,104.077,6.696,4.467,1.499,39492.0,4.1,23.299,0.646,0.014,0.071,False,False
+BG,per_capita,Bulgaria,Europe & Central Asia,27,18.317,4.197,2.847,1.474,20328.167,0.792,6.433,0.577,0.003,0.018,False,False
+MD,per_capita,Moldova,Europe & Central Asia,5,3.294,2.118,1.395,1.518,8621.717,0.216,2.361,0.529,0.004,0.032,False,False
+RS,per_capita,Serbia,Europe & Central Asia,18,13.337,2.748,2.037,1.35,15262.046,0.94,6.549,0.431,0.001,0.018,False,False
+EG,per_capita,"Egypt, Arab Rep.","Middle East, North Africa, Afghanistan & Pakistan",53,42.76,0.448,0.361,1.239,3085.807,1.018,118.366,0.331,0.004,0.093,False,False
+CA,per_capita,Canada,North America,377,307.275,9.051,7.377,1.227,55697.664,1.791,41.652,0.31,0.001,0.029,False,False
+FI,per_capita,Finland,Europe & Central Asia,46,38.501,8.147,6.819,1.195,56148.581,3.094,5.646,0.264,0.001,0.038,False,False
+ID,per_capita,Indonesia,East Asia & Pacific,253,215.676,0.885,0.755,1.173,5059.626,0.281,285.721,0.241,0.001,0.04,False,False
+CN,per_capita,China,East Asia & Pacific,2494,2198.506,1.773,1.563,1.134,13861.97,2.577,1406.585,0.192,0.001,0.06,False,False
+MY,per_capita,Malaysia,East Asia & Pacific,65,61.575,1.807,1.711,1.056,13124.555,1.012,35.978,0.078,0.0,0.02,False,False
+PK,per_capita,Pakistan,"Middle East, North Africa, Afghanistan & Pakistan",64,60.805,0.251,0.238,1.053,1595.909,0.164,255.22,0.076,0.0,0.074,False,False
+GB,per_capita,United Kingdom,Europe & Central Asia,502,498.409,7.224,7.173,1.007,57601.962,2.676,69.487,0.011,0.0,0.03,False,False
+NG,per_capita,Nigeria,Sub-Saharan Africa,39,38.981,0.164,0.164,1.0,1224.254,0.284,237.528,0.001,0.0,0.085,False,False
+AU,per_capita,Australia,East Asia & Pacific,230,239.576,8.329,8.676,0.96,65129.723,1.858,27.614,-0.059,0.0,0.025,False,False
+HR,per_capita,Croatia,Europe & Central Asia,13,13.745,3.354,3.546,0.946,27103.912,1.386,3.876,-0.075,0.0,0.014,False,False
+BA,per_capita,Bosnia and Herzegovina,Europe & Central Asia,5,5.355,1.592,1.705,0.934,10381.846,0.214,3.14,-0.084,0.0,0.029,False,False
+IR,per_capita,"Iran, Islamic Rep.","Middle East, North Africa, Afghanistan & Pakistan",42,45.61,0.454,0.494,0.921,3924.38,0.727,92.418,-0.118,0.0,0.045,False,False
+AT,per_capita,Austria,Europe & Central Asia,64,70.391,6.95,7.644,0.909,62930.035,3.255,9.208,-0.136,0.0,0.032,False,False
+AE,per_capita,United Arab Emirates,"Middle East, North Africa, Afghanistan & Pakistan",70,78.316,6.08,6.802,0.894,50273.513,1.495,11.513,-0.159,0.0,0.019,False,False
+PT,per_capita,Portugal,Europe & Central Asia,39,44.468,3.609,4.116,0.877,32081.811,1.695,10.805,-0.183,0.0,0.016,False,False
+EE,per_capita,Estonia,Europe & Central Asia,5,5.986,3.659,4.381,0.835,34417.632,1.839,1.366,-0.217,0.0,0.014,False,False
+SI,per_capita,Slovenia,Europe & Central Asia,8,9.96,3.754,4.674,0.803,37376.222,2.134,2.131,-0.278,0.0,0.017,False,False
+SE,per_capita,Sweden,Europe & Central Asia,65,79.988,6.134,7.548,0.813,63133.213,3.6,10.597,-0.291,0.001,0.031,False,False
+NZ,per_capita,New Zealand,East Asia & Pacific,28,35.491,5.259,6.665,0.789,49591.041,1.548,5.325,-0.322,0.0,0.016,False,False
+HU,per_capita,Hungary,Europe & Central Asia,25,32.174,2.628,3.382,0.777,25907.474,1.377,9.514,-0.34,0.0,0.012,False,False
+NL,per_capita,Netherlands,Europe & Central Asia,134,173.547,7.408,9.595,0.772,73683.917,2.267,18.088,-0.36,0.001,0.023,False,False
+TH,per_capita,Thailand,East Asia & Pacific,56,73.487,0.782,1.026,0.762,8056.564,0.936,71.62,-0.374,0.001,0.022,False,False
+CH,per_capita,Switzerland,Europe & Central Asia,101,132.737,11.108,14.599,0.761,114769.012,3.222,9.092,-0.381,0.001,0.032,False,False
+IT,per_capita,Italy,Europe & Central Asia,262,345.87,4.447,5.871,0.758,43308.64,1.379,58.916,-0.385,0.001,0.014,False,False
+RO,per_capita,Romania,Europe & Central Asia,48,64.784,2.524,3.406,0.741,22537.953,0.517,19.02,-0.409,0.001,0.016,False,False
+DE,per_capita,Germany,Europe & Central Asia,448,614.87,5.366,7.364,0.729,60496.435,3.154,83.491,-0.44,0.001,0.025,False,False
+NO,per_capita,Norway,Europe & Central Asia,51,72.718,9.089,12.96,0.701,94594.193,1.851,5.611,-0.483,0.002,0.024,False,False
+CZ,per_capita,Czechia,Europe & Central Asia,34,49.95,3.123,4.588,0.681,35917.272,1.834,10.887,-0.514,0.001,0.014,False,False
+AZ,per_capita,Azerbaijan,Europe & Central Asia,8,12.227,0.781,1.193,0.654,7410.723,0.208,10.247,-0.53,0.002,0.024,False,False
+IL,per_capita,Israel,"Middle East, North Africa, Afghanistan & Pakistan",45,66.476,4.445,6.567,0.677,60336.848,6.346,10.123,-0.533,0.003,0.045,False,False
+DK,per_capita,Denmark,Europe & Central Asia,37,57.629,6.157,9.59,0.642,76970.154,3.048,6.009,-0.591,0.002,0.022,False,False
+LT,per_capita,Lithuania,Europe & Central Asia,8,13.212,2.769,4.574,0.605,32958.671,1.05,2.889,-0.617,0.001,0.009,False,False
+SK,per_capita,Slovak Republic,Europe & Central Asia,13,21.27,2.401,3.929,0.611,28543.665,1.034,5.414,-0.625,0.001,0.009,False,False
+CY,per_capita,Cyprus,Europe & Central Asia,5,8.667,3.648,6.323,0.577,41783.09,0.681,1.371,-0.646,0.002,0.015,False,False
+DZ,per_capita,Algeria,"Middle East, North Africa, Afghanistan & Pakistan",24,40.325,0.506,0.85,0.595,6051.003,0.444,47.435,-0.676,0.002,0.016,False,False
+US,per_capita,United States,North America,2306,3802.966,6.747,11.127,0.606,90026.516,3.447,341.785,-0.676,0.003,0.024,False,False
+TR,per_capita,Turkiye,Europe & Central Asia,117,202.412,1.362,2.357,0.578,18599.442,1.422,85.879,-0.726,0.001,0.012,False,False
+BY,per_capita,Belarus,Europe & Central Asia,7,13.049,0.77,1.436,0.536,10279.255,0.587,9.086,-0.748,0.001,0.009,False,False
+BR,per_capita,Brazil,Latin America & Caribbean,161,285.247,0.757,1.34,0.564,10713.286,1.194,212.812,-0.758,0.002,0.016,False,False
+UZ,per_capita,Uzbekistan,Europe & Central Asia,13,25.246,0.351,0.681,0.515,3968.272,0.104,37.053,-0.837,0.006,0.036,False,False
+ES,per_capita,Spain,Europe & Central Asia,127,253.009,2.573,5.126,0.502,38627.247,1.494,49.355,-0.894,0.002,0.009,False,False
+QA,per_capita,Qatar,"Middle East, North Africa, Afghanistan & Pakistan",16,33.984,5.383,11.434,0.471,72524.907,0.681,2.972,-0.942,0.005,0.023,False,False
+PL,per_capita,Poland,Europe & Central Asia,62,133.475,1.702,3.663,0.465,28419.578,1.555,36.436,-0.978,0.002,0.009,False,False
+IE,per_capita,Ireland,Europe & Central Asia,48,103.835,8.752,18.933,0.462,131592.463,1.588,5.484,-0.987,0.005,0.023,False,False
+JP,per_capita,Japan,East Asia & Pacific,235,512.346,1.905,4.153,0.459,35951.045,3.441,123.367,-1.005,0.004,0.019,False,False
+SA,per_capita,Saudi Arabia,"Middle East, North Africa, Afghanistan & Pakistan",86,192.687,2.326,5.211,0.446,34536.656,0.635,36.974,-1.027,0.002,0.011,False,False
+OM,per_capita,Oman,"Middle East, North Africa, Afghanistan & Pakistan",7,17.171,1.274,3.125,0.408,19947.397,0.39,5.495,-1.05,0.003,0.012,False,False
+PH,per_capita,Philippines,East Asia & Pacific,31,71.821,0.265,0.615,0.432,4170.723,0.276,116.787,-1.054,0.004,0.017,False,False
+MM,per_capita,Myanmar,East Asia & Pacific,6,16.596,0.109,0.303,0.362,1488.875,0.023,54.851,-1.199,0.02,0.069,False,False
+KZ,per_capita,Kazakhstan,Europe & Central Asia,20,53.951,0.96,2.588,0.371,14692.133,0.162,20.844,-1.214,0.007,0.025,False,False
+RU,per_capita,Russian Federation,Europe & Central Asia,123,339.655,0.857,2.367,0.362,17546.609,0.937,143.513,-1.255,0.002,0.005,False,False
+FR,per_capita,France,Europe & Central Asia,139,428.045,2.023,6.229,0.325,48985.731,2.178,68.72,-1.372,0.003,0.008,False,False
+BE,per_capita,Belgium,Europe & Central Asia,28,87.822,2.345,7.354,0.319,60750.274,3.272,11.942,-1.373,0.004,0.012,False,False
+ZA,per_capita,South Africa,Sub-Saharan Africa,14,57.337,0.216,0.886,0.244,6597.715,0.615,64.747,-1.609,0.003,0.007,False,False
+CL,per_capita,Chile,Latin America & Caribbean,13,55.511,0.655,2.795,0.234,17994.591,0.392,19.86,-1.644,0.003,0.007,False,False
+IQ,per_capita,Iraq,"Middle East, North Africa, Afghanistan & Pakistan",8,51.931,0.17,1.104,0.154,5409.679,0.041,47.021,-2.011,0.014,0.027,True,False
+PE,per_capita,Peru,Latin America & Caribbean,8,56.468,0.231,1.633,0.142,9684.412,0.176,34.577,-2.063,0.004,0.008,True,False
+AR,per_capita,Argentina,Latin America & Caribbean,14,97.726,0.305,2.131,0.143,14898.089,0.601,45.851,-2.083,0.001,0.002,True,False
+CO,per_capita,Colombia,Latin America & Caribbean,9,70.6,0.168,1.321,0.127,8561.621,0.289,53.426,-2.156,0.002,0.004,True,False
+MX,per_capita,Mexico,Latin America & Caribbean,35,299.394,0.265,2.269,0.117,13889.234,0.254,131.947,-2.283,0.003,0.005,True,False
