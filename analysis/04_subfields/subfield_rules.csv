@@ -1,0 +1,14 @@
+subfield,label,kind,pattern
+retrieval,Retrieval & indexing,method,re-?rank|dense retriev|sparse retriev|hybrid (search|retriev)|\mchunk(s|ing)?\M|embedding models?|query (rewrit|expan|reformul|decompos)|vector (database|search|store|index)|\mbm25\M|\mindexing\M
+graph,Graphs & knowledge graphs,method,knowledge graph|graph-?rag|graph[- ]based|graph retriev|graph neural|\mkgs?\M|graph[- ]structured|ontolog
+agentic,Agents & multi-agent,method,\magent(s|ic)?\M|multi-?agent
+multimodal,Multimodal,method,multi-?modal|vision[- ]language|\mimages?\M|\mvideos?\M|\maudio\M|\mvisual\M
+finetuning,Fine-tuning & adaptation,method,fine-?tun|\mq?lora\M|\mpeft\M|distillation|parameter-efficient|instruction[- ]tun|domain adaptation
+evaluation,Evaluation & benchmarks,method,\mbenchmark(s|ing)?\M|evaluation (framework|metric|suite|methodolog|protocol)|\mragas\M
+hallucination,Hallucination & factuality,method,hallucinat|\mfactual|faithful|misinformation|fact[- ]check
+security,Security & privacy,method,adversarial|poison|jailbreak|prompt injection|privacy|\mattacks?\M|backdoor|data leak|membership inference
+healthcare,Healthcare & medicine,application,medical|medicine|clinical|health|patient|biomedic|\mdrugs?\M
+education,Education,application,education|\mstudents?\M(?! models?)|\mtutor|teaching|\mlearners?\M|classroom|pedagog
+legal,Law & compliance,application,\mlegal\M|\mlaws?\M|\mcourt|statut|regulat|compliance|judicial
+finance,Finance,application,financ|\mbanking\M|investment|\mstock (market|price)|fintech
+software,Software & code,application,code generation|code (completion|search|review|repair|summar)|source code|code repositor|\mprogramming\M|software (engineering|development)

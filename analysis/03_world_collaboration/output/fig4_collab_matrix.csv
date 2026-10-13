@@ -1,0 +1,125 @@
+﻿rank_a,country_code_a,country_a,papers_a,rank_b,country_code_b,country_b,joint_papers,share_of_a_pct
+1,CN,China,2494,2,US,United States,301,12.1
+1,CN,China,2494,3,IN,India,27,1.1
+1,CN,China,2494,4,GB,United Kingdom,109,4.4
+1,CN,China,2494,5,DE,Germany,28,1.1
+1,CN,China,2494,6,CA,Canada,66,2.6
+1,CN,China,2494,7,KR,"Korea, Rep.",11,0.4
+1,CN,China,2494,8,HK,"Hong Kong SAR, China",179,7.2
+1,CN,China,2494,9,IT,Italy,9,0.4
+1,CN,China,2494,10,ID,Indonesia,1,0.0
+1,CN,China,2494,11,JP,Japan,29,1.2
+1,CN,China,2494,12,AU,Australia,57,2.3
+2,US,United States,2306,1,CN,China,301,13.1
+2,US,United States,2306,3,IN,India,90,3.9
+2,US,United States,2306,4,GB,United Kingdom,106,4.6
+2,US,United States,2306,5,DE,Germany,57,2.5
+2,US,United States,2306,6,CA,Canada,113,4.9
+2,US,United States,2306,7,KR,"Korea, Rep.",55,2.4
+2,US,United States,2306,8,HK,"Hong Kong SAR, China",45,2.0
+2,US,United States,2306,9,IT,Italy,28,1.2
+2,US,United States,2306,10,ID,Indonesia,5,0.2
+2,US,United States,2306,11,JP,Japan,24,1.0
+2,US,United States,2306,12,AU,Australia,47,2.0
+3,IN,India,1106,1,CN,China,27,2.4
+3,IN,India,1106,2,US,United States,90,8.1
+3,IN,India,1106,4,GB,United Kingdom,18,1.6
+3,IN,India,1106,5,DE,Germany,7,0.6
+3,IN,India,1106,6,CA,Canada,12,1.1
+3,IN,India,1106,7,KR,"Korea, Rep.",2,0.2
+3,IN,India,1106,8,HK,"Hong Kong SAR, China",3,0.3
+3,IN,India,1106,9,IT,Italy,10,0.9
+3,IN,India,1106,10,ID,Indonesia,5,0.5
+3,IN,India,1106,11,JP,Japan,5,0.5
+3,IN,India,1106,12,AU,Australia,2,0.2
+4,GB,United Kingdom,502,1,CN,China,109,21.7
+4,GB,United Kingdom,502,2,US,United States,106,21.1
+4,GB,United Kingdom,502,3,IN,India,18,3.6
+4,GB,United Kingdom,502,5,DE,Germany,24,4.8
+4,GB,United Kingdom,502,6,CA,Canada,27,5.4
+4,GB,United Kingdom,502,7,KR,"Korea, Rep.",11,2.2
+4,GB,United Kingdom,502,8,HK,"Hong Kong SAR, China",18,3.6
+4,GB,United Kingdom,502,9,IT,Italy,10,2.0
+4,GB,United Kingdom,502,10,ID,Indonesia,2,0.4
+4,GB,United Kingdom,502,11,JP,Japan,8,1.6
+4,GB,United Kingdom,502,12,AU,Australia,14,2.8
+5,DE,Germany,448,1,CN,China,28,6.3
+5,DE,Germany,448,2,US,United States,57,12.7
+5,DE,Germany,448,3,IN,India,7,1.6
+5,DE,Germany,448,4,GB,United Kingdom,24,5.4
+5,DE,Germany,448,6,CA,Canada,12,2.7
+5,DE,Germany,448,7,KR,"Korea, Rep.",5,1.1
+5,DE,Germany,448,8,HK,"Hong Kong SAR, China",5,1.1
+5,DE,Germany,448,9,IT,Italy,15,3.3
+5,DE,Germany,448,10,ID,Indonesia,1,0.2
+5,DE,Germany,448,11,JP,Japan,6,1.3
+5,DE,Germany,448,12,AU,Australia,9,2.0
+6,CA,Canada,377,1,CN,China,66,17.5
+6,CA,Canada,377,2,US,United States,113,30.0
+6,CA,Canada,377,3,IN,India,12,3.2
+6,CA,Canada,377,4,GB,United Kingdom,27,7.2
+6,CA,Canada,377,5,DE,Germany,12,3.2
+6,CA,Canada,377,7,KR,"Korea, Rep.",23,6.1
+6,CA,Canada,377,8,HK,"Hong Kong SAR, China",17,4.5
+6,CA,Canada,377,9,IT,Italy,9,2.4
+6,CA,Canada,377,11,JP,Japan,10,2.7
+6,CA,Canada,377,12,AU,Australia,7,1.9
+7,KR,"Korea, Rep.",316,1,CN,China,11,3.5
+7,KR,"Korea, Rep.",316,2,US,United States,55,17.4
+7,KR,"Korea, Rep.",316,3,IN,India,2,0.6
+7,KR,"Korea, Rep.",316,4,GB,United Kingdom,11,3.5
+7,KR,"Korea, Rep.",316,5,DE,Germany,5,1.6
+7,KR,"Korea, Rep.",316,6,CA,Canada,23,7.3
+7,KR,"Korea, Rep.",316,8,HK,"Hong Kong SAR, China",4,1.3
+7,KR,"Korea, Rep.",316,10,ID,Indonesia,3,0.9
+7,KR,"Korea, Rep.",316,11,JP,Japan,6,1.9
+7,KR,"Korea, Rep.",316,12,AU,Australia,4,1.3
+8,HK,"Hong Kong SAR, China",276,1,CN,China,179,64.9
+8,HK,"Hong Kong SAR, China",276,2,US,United States,45,16.3
+8,HK,"Hong Kong SAR, China",276,3,IN,India,3,1.1
+8,HK,"Hong Kong SAR, China",276,4,GB,United Kingdom,18,6.5
+8,HK,"Hong Kong SAR, China",276,5,DE,Germany,5,1.8
+8,HK,"Hong Kong SAR, China",276,6,CA,Canada,17,6.2
+8,HK,"Hong Kong SAR, China",276,7,KR,"Korea, Rep.",4,1.4
+8,HK,"Hong Kong SAR, China",276,9,IT,Italy,1,0.4
+8,HK,"Hong Kong SAR, China",276,11,JP,Japan,2,0.7
+8,HK,"Hong Kong SAR, China",276,12,AU,Australia,16,5.8
+9,IT,Italy,262,1,CN,China,9,3.4
+9,IT,Italy,262,2,US,United States,28,10.7
+9,IT,Italy,262,3,IN,India,10,3.8
+9,IT,Italy,262,4,GB,United Kingdom,10,3.8
+9,IT,Italy,262,5,DE,Germany,15,5.7
+9,IT,Italy,262,6,CA,Canada,9,3.4
+9,IT,Italy,262,8,HK,"Hong Kong SAR, China",1,0.4
+9,IT,Italy,262,10,ID,Indonesia,1,0.4
+9,IT,Italy,262,11,JP,Japan,2,0.8
+9,IT,Italy,262,12,AU,Australia,2,0.8
+10,ID,Indonesia,253,1,CN,China,1,0.4
+10,ID,Indonesia,253,2,US,United States,5,2.0
+10,ID,Indonesia,253,3,IN,India,5,2.0
+10,ID,Indonesia,253,4,GB,United Kingdom,2,0.8
+10,ID,Indonesia,253,5,DE,Germany,1,0.4
+10,ID,Indonesia,253,7,KR,"Korea, Rep.",3,1.2
+10,ID,Indonesia,253,9,IT,Italy,1,0.4
+10,ID,Indonesia,253,11,JP,Japan,6,2.4
+11,JP,Japan,235,1,CN,China,29,12.3
+11,JP,Japan,235,2,US,United States,24,10.2
+11,JP,Japan,235,3,IN,India,5,2.1
+11,JP,Japan,235,4,GB,United Kingdom,8,3.4
+11,JP,Japan,235,5,DE,Germany,6,2.6
+11,JP,Japan,235,6,CA,Canada,10,4.3
+11,JP,Japan,235,7,KR,"Korea, Rep.",6,2.6
+11,JP,Japan,235,8,HK,"Hong Kong SAR, China",2,0.9
+11,JP,Japan,235,9,IT,Italy,2,0.9
+11,JP,Japan,235,10,ID,Indonesia,6,2.6
+11,JP,Japan,235,12,AU,Australia,4,1.7
+12,AU,Australia,230,1,CN,China,57,24.8
+12,AU,Australia,230,2,US,United States,47,20.4
+12,AU,Australia,230,3,IN,India,2,0.9
+12,AU,Australia,230,4,GB,United Kingdom,14,6.1
+12,AU,Australia,230,5,DE,Germany,9,3.9
+12,AU,Australia,230,6,CA,Canada,7,3.0
+12,AU,Australia,230,7,KR,"Korea, Rep.",4,1.7
+12,AU,Australia,230,8,HK,"Hong Kong SAR, China",16,7.0
+12,AU,Australia,230,9,IT,Italy,2,0.9
+12,AU,Australia,230,11,JP,Japan,4,1.7

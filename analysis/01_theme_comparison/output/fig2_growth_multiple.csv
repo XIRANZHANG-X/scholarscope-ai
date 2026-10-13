@@ -1,0 +1,17 @@
+﻿theme,year,works,works_previous_year,growth_multiple
+agents,2022,171,161,1.06
+agents,2023,373,171,2.18
+agents,2024,1106,373,2.97
+agents,2025,4647,1106,4.2
+foundation_models,2022,757,473,1.6
+foundation_models,2023,1762,757,2.33
+foundation_models,2024,3069,1762,1.74
+foundation_models,2025,4945,3069,1.61
+llm,2022,781,160,4.88
+llm,2023,12315,781,15.77
+llm,2024,32262,12315,2.62
+llm,2025,52858,32262,1.64
+rag,2022,19,14,1.36
+rag,2023,133,19,7.0
+rag,2024,1966,133,14.78
+rag,2025,5505,1966,2.8

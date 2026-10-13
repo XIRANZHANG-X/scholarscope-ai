@@ -1,0 +1,16 @@
+﻿rank,country_code,country,papers,domestic_only,international,international_share_pct,all_papers_with_country,all_international_papers
+1,CN,China,2494,1645,849,34.0,9335,2176
+2,US,United States,2306,1401,905,39.2,9335,2176
+3,IN,India,1106,914,192,17.4,9335,2176
+4,GB,United Kingdom,502,195,307,61.2,9335,2176
+5,DE,Germany,448,264,184,41.1,9335,2176
+6,CA,Canada,377,133,244,64.7,9335,2176
+7,KR,"Korea, Rep.",316,197,119,37.7,9335,2176
+8,HK,"Hong Kong SAR, China",276,45,231,83.7,9335,2176
+9,IT,Italy,262,146,116,44.3,9335,2176
+10,ID,Indonesia,253,214,39,15.4,9335,2176
+11,JP,Japan,235,140,95,40.4,9335,2176
+12,AU,Australia,230,82,148,64.3,9335,2176
+13,SG,Singapore,203,32,171,84.2,9335,2176
+14,BR,Brazil,161,119,42,26.1,9335,2176
+15,TW,Taiwan,156,92,64,41.0,9335,2176
