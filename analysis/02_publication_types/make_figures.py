@@ -1,19 +1,22 @@
-"""Direction 2: preprints, conference papers and journal articles in the RAG corpus.
+"""Direction 2: preprints, conference papers and articles in the RAG corpus.
 
     uv run python analysis/02_publication_types/make_figures.py [--from-csv]
 
-Four figures from core.works / core.sources (plus meta.recall_probes for the theme comparison).
-The type is OpenAlex's `type` field. See README.md for each figure and its caveats.
+Data: core.works / core.sources (plus meta.recall_probes for the theme comparison). The type is
+OpenAlex's `type` field. Quarters are grouped by year with the incomplete period shaded,
+citations are compared within a publication-year cohort, and venues are ranked per type. House style from common.py; one plot per
+figure. See README.md for each figure and its caveats.
 """
 
 from __future__ import annotations
 
 import re
 import sys
+import textwrap
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import to_rgb
 from matplotlib.ticker import FuncFormatter
 
 HERE = Path(__file__).resolve().parent
@@ -21,15 +24,9 @@ if not (HERE / "common.py").exists():       # in the repo the shared module sits
     sys.path.insert(0, str(HERE.parent))    # a folder handed over on its own carries a copy
 import common as C  # noqa: E402
 
-# Colour follows the publication type in every figure of this direction; stacks use this order.
-TYPES = {
-    "preprint": ("Preprint", C.SERIES[0]),
-    "conference-paper": ("Conference paper", C.SERIES[1]),
-    "article": ("Article", C.SERIES[2]),
-    "review": ("Review", C.SERIES[3]),
-}
+TYPES = list(C.TYPE_LABELS)                  # stacks use this order
 MAIN_TYPES = ["preprint", "conference-paper", "article"]
-THEME_LABELS = {"rag": "RAG", "llm": "LLM", "agents": "Agents", "foundation_models": "Foundation models"}
+PLURAL = {"preprint": "Preprints", "conference-paper": "Conference Papers", "article": "Articles"}
 
 thousands = FuncFormatter(lambda v, _: f"{v:,.0f}")
 percent = FuncFormatter(lambda v, _: f"{v:.0f}%")
@@ -38,36 +35,28 @@ percent = FuncFormatter(lambda v, _: f"{v:.0f}%")
 def fig1_type_by_quarter(data: C.Data) -> None:
     df = data.fetch("fig1_type_by_quarter")
     wide = df.pivot(index="quarter", columns="type", values="works").fillna(0).sort_index()
-    fig, ax = plt.subplots(figsize=(9.2, 4.8))
+    fig, ax = C.new_figure()
     x = np.arange(len(wide))
     bottom = np.zeros(len(wide))
-    for key, (label, color) in TYPES.items():
-        # The white edge is the 2px surface gap that separates stacked segments.
-        ax.bar(x, wide[key], 0.52, bottom=bottom, color=color, edgecolor="white", linewidth=1.2,
-               label=label, zorder=3)
+    for key in TYPES:
+        ax.bar(x, wide[key], 0.62, bottom=bottom, color=C.COLORS[key], edgecolor="white", linewidth=1.5,
+               label=C.TYPE_LABELS[key], zorder=3)
         bottom += wide[key].to_numpy()
     for xi, total in zip(x, bottom):
-        ax.annotate(f"{total:,.0f}", (xi, total), xytext=(0, 3), textcoords="offset points",
-                    ha="center", va="bottom", fontsize=8, color=C.INK_2)
-    # Conference papers reach OpenAlex months late, so the newest quarters are not a real decline.
-    lagging = {"2026Q2", "2026Q3"}
+        C.label(ax, xi, total, f"{total:,.0f}")
+    # The last two quarters: conference papers are still being indexed, Q3 ends on 22 Sep.
+    ax.axvspan(len(wide) - 2.5, len(wide) - 0.5, color=C.LAND, zorder=0)
+    C.label(ax, len(wide) - 1.5, bottom.max() * 1.13, "Incomplete*", dy=0)
     ax.set_xticks(x)
-    ax.set_xticklabels([q.replace("Q", " Q") + ("*" if q in lagging else "") for q in wide.index])
-    ax.set_ylim(0, bottom.max() * 1.12)
+    ax.set_xticklabels([f"{q[-2:]}\n{q[:4]}" if q.endswith("Q1") or i == 0 else q[-2:]
+                        for i, q in enumerate(wide.index)])
+    ax.set_xlim(-0.6, len(wide) - 0.4)
+    ax.set_ylim(0, bottom.max() * 1.25)
     ax.yaxis.set_major_formatter(thousands)
-    ax.set_ylabel("Papers per quarter")
-    C.style_axes(ax)
-    C.legend(ax, loc="upper left", ncol=4, handlelength=1.0, columnspacing=1.4)
-    ax.text(0.012, 0.90, "* conference papers from these quarters are still being indexed, not a real decline",
-            transform=ax.transAxes, fontsize=8, color=C.MUTED, ha="left", va="top",
-            bbox=dict(facecolor="white", edgecolor="none", pad=1.5))
-    fig.tight_layout()
-    year_only = df.groupby(df["quarter"].str[:4])["year_only_date"].first()
-    left_out = ", ".join(f"{n:,} in {y}" for y, n in year_only.items())
-    C.titles(fig, "RAG papers per quarter by publication type",
-             "Papers with a known publication month, 2024 Q1 to 2026 Q3 (the last quarter ends 22 Sep).",
-             f"{C.SOURCE} Type is OpenAlex's `type` field.\n"
-             f"Left out because OpenAlex knows only their year: {left_out}.")
+    ax.set_xlabel("Quarter (papers dated to the year only are excluded)")
+    ax.set_ylabel("Papers")
+    C.legend(ax, loc="upper left", ncol=4)
+    C.finish(fig, ax, "RAG Papers per Quarter by Publication Type")
     data.save(fig, "fig1_type_by_quarter")
 
 
@@ -75,116 +64,113 @@ def _stacked_share(ax, rows: list[str], shares: dict[str, list[float]]) -> None:
     """100% stacked horizontal bars; a segment is labelled only when its share has room."""
     y = np.arange(len(rows))
     left = np.zeros(len(rows))
-    for key, (label, color) in TYPES.items():
+    for key in TYPES:
         values = np.array(shares[key])
-        ax.barh(y, values, 0.5, left=left, color=color, edgecolor="white", linewidth=1.2, label=label, zorder=3)
+        ax.barh(y, values, 0.55, left=left, color=C.COLORS[key], edgecolor="white", linewidth=1.5,
+                label=C.TYPE_LABELS[key], zorder=3)
         for yi, start, value in zip(y, left, values):
             if value >= 7:
-                ax.text(start + value / 2, yi, f"{value:.0f}%", ha="center", va="center", fontsize=8,
-                        color="white" if key in ("preprint", "conference-paper") else C.INK)
+                ax.text(start + value / 2, yi, f"{value:.0f}%", ha="center", va="center", fontsize=C.LABEL,
+                        weight="bold", color="white" if key != "review" else C.INK)
         left += values
     ax.set_yticks(y)
     ax.set_yticklabels(rows)
     ax.invert_yaxis()
     ax.set_xlim(0, 100)
     ax.xaxis.set_major_formatter(percent)
-    C.style_axes(ax, grid="x")
+    ax.set_xlabel("Share of papers")
 
 
 def fig2_type_share(data: C.Data) -> None:
     by_year = data.fetch("fig2a_type_share_by_year")
+    years = [2024, 2025, 2026]
+    table = by_year.pivot(index="year", columns="type", values="share_pct").fillna(0)
+    fig, ax = C.new_figure()
+    _stacked_share(ax, ["2024", "2025", "2026*"], {k: table.loc[years, k].tolist() for k in TYPES})
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=4, frameon=False)
+    C.finish(fig, ax, "Publication Type Mix by Year")
+    data.save(fig, "fig2_type_share_by_year")
+
     by_theme = data.fetch("fig2b_type_mix_by_theme")
-    fig, (ax_year, ax_theme) = plt.subplots(1, 2, figsize=(11.2, 3.5))
+    themes = list(C.THEME_LABELS)
+    table = by_theme.pivot(index="theme", columns="type", values="share_pct").fillna(0)
+    fig, ax = C.new_figure()
+    _stacked_share(ax, [C.THEME_LABELS[t] for t in themes], {k: table.loc[themes, k].tolist() for k in TYPES})
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=4, frameon=False)
+    C.finish(fig, ax, "Publication Type Mix by Research Theme")
+    data.save(fig, "fig2b_type_mix_by_theme")
 
-    years = sorted(by_year["year"].unique())
-    year_totals = by_year.groupby("year")["works_in_year"].first()
-    year_pivot = by_year.pivot(index="year", columns="type", values="share_pct").fillna(0)
-    _stacked_share(ax_year, [f"{y}  (n = {year_totals[y]:,.0f})" for y in years],
-                   {k: year_pivot.loc[years, k].tolist() for k in TYPES})
-    ax_year.set_title("RAG corpus, by publication year", loc="left")
 
-    themes = list(THEME_LABELS)
-    theme_totals = by_theme.groupby("theme")["works_in_theme"].first()
-    theme_pivot = by_theme.pivot(index="theme", columns="type", values="share_pct").fillna(0)
-    _stacked_share(ax_theme, [f"{THEME_LABELS[t]}  (n = {theme_totals[t]:,.0f})" for t in themes],
-                   {k: theme_pivot.loc[themes, k].tolist() for k in TYPES})
-    ax_theme.set_title("RAG next to the other themes, 2019–2026", loc="left")
-
-    fig.tight_layout(w_pad=3.0)
-    C.legend_below(fig, *ax_year.get_legend_handles_labels(), ncol=4, handlelength=1.0, columnspacing=1.6)
-    C.titles(fig, "Publication-type mix of RAG papers",
-             "Share of papers by OpenAlex type. Left: the RAG corpus year by year. Right: computer-science papers of each theme.",
-             f"{C.SOURCE} {C.PARTIAL_2026} Reviews are under 1% everywhere and too thin to label.\n"
-             "Theme counts add up several search phrases for LLM, Agents and Foundation models (n is an upper bound).")
-    data.save(fig, "fig2_type_share")
+def _tint(color: str, amount: float = 0.5) -> tuple[float, float, float]:
+    """The colour mixed with white: the same type, a lighter shade."""
+    r, g, b = to_rgb(color)
+    return (r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount)
 
 
 def fig3_citations_by_type(data: C.Data) -> None:
+    """Two figures (share cited, mean citations): per type, the 2024 cohort (full colour) beside the
+    2025 cohort (light shade). Compare types within a cohort; the 2025 papers have had a year less."""
     df = data.fetch("fig3_citations_by_type")
     df = df[df["type"].isin(MAIN_TYPES)]
-    cohorts = {2024: ("Published 2024", "#256abf"), 2025: ("Published 2025", "#86b6ef")}
-    panels = [("cited_share_pct", "Papers cited at least once", lambda v: f"{v:.0f}%", percent),
-              ("mean_citations", "Mean citations per paper", lambda v: f"{v:.1f}", None)]
-    fig, axes = plt.subplots(1, 2, figsize=(10.4, 3.3), sharey=True)
-    y = np.arange(len(MAIN_TYPES))
-    for ax, (column, title, fmt, formatter) in zip(axes, panels):
-        table = df.pivot(index="type", columns="cohort_year", values=column).loc[MAIN_TYPES]
-        counts = df.pivot(index="type", columns="cohort_year", values="works").loc[MAIN_TYPES]
-        ax.hlines(y, table[2025], table[2024], color=C.AXIS, lw=1.6, zorder=2)   # dumbbell bar
-        for year, (label, color) in cohorts.items():
-            ax.scatter(table[year], y, s=70, color=color, edgecolor="white", linewidth=1.4, zorder=3, label=label)
-            for yi, value in zip(y, table[year]):
-                ax.annotate(fmt(value), (value, yi), xytext=(0, 9), textcoords="offset points",
-                            ha="center", va="bottom", fontsize=8, color=C.INK_2)
-        ax.set_yticks(y)
-        ax.set_yticklabels([f"{TYPES[t][0]}\n{counts.loc[t, 2024]:,.0f} / {counts.loc[t, 2025]:,.0f} papers"
+    cohorts = {2024: 0.0, 2025: 0.55}                      # cohort -> how much white is mixed in
+    measures = {"cited_share_pct": ("Share of Papers Cited at Least Once", "Share of papers cited",
+                                    lambda v: f"{v:.0f}%", percent, 100),
+                "mean_citations": ("Mean Citations per Paper", "Mean citations per paper",
+                                   lambda v: f"{v:.1f}", None, df["mean_citations"].max())}
+    for column, (title, ylabel, fmt, formatter, ymax) in measures.items():
+        fig, ax = C.new_figure()
+        x = np.arange(len(MAIN_TYPES))
+        width = 0.36
+        for j, (year, amount) in enumerate(cohorts.items()):
+            d = df[df["cohort_year"] == year].set_index("type").loc[MAIN_TYPES]
+            bars = ax.bar(x + (j - 0.5) * width, d[column], width * 0.92, zorder=3,
+                          color=[_tint(C.COLORS[t], amount) for t in MAIN_TYPES])
+            C.bar_labels(ax, bars, [fmt(v) for v in d[column]])
+            # Legend proxies in neutral grey: the shade, not the hue, tells the cohorts apart.
+            ax.bar(0, 0, color=_tint(C.INK_2, amount + 0.1), label=f"Published in {year}")
+        n = df.pivot(index="type", columns="cohort_year", values="works")
+        ax.set_xticks(x)
+        ax.set_xticklabels([f"{C.TYPE_LABELS[t]}\n(n = {n.loc[t, 2024]:,} / {n.loc[t, 2025]:,})"
                             for t in MAIN_TYPES])
-        ax.set_ylim(len(MAIN_TYPES) - 0.45, -0.75)
-        ax.set_xlim(0, table.to_numpy().max() * 1.12)
+        ax.set_xlim(-0.6, len(MAIN_TYPES) - 0.4)
+        ax.set_ylim(0, ymax * 1.15)
         if formatter:
-            ax.xaxis.set_major_formatter(formatter)
-        ax.set_title(title, loc="left")
-        C.style_axes(ax, grid="x")
-    fig.tight_layout(w_pad=2.5)
-    C.legend_below(fig, *axes[0].get_legend_handles_labels(), ncol=2, handletextpad=0.3, columnspacing=1.6)
-    C.titles(fig, "Citations by publication type, same publication year",
-             "Each type compared within one cohort, because older papers have had longer to be cited. Paper counts: 2024 / 2025.",
-             f"{C.SOURCE} Citations counted up to that date. Reviews are left out of the chart (5 and 22 papers).")
-    data.save(fig, "fig3_citations_by_type")
+            ax.yaxis.set_major_formatter(formatter)
+        ax.set_xlabel("Publication type (papers published in 2024 / 2025)")
+        ax.set_ylabel(f"{ylabel} (to 22 Sep 2026)")
+        C.legend(ax, loc="upper left")
+        C.finish(fig, ax, title)
+        data.save(fig, f"fig3_{column.replace('_pct', '')}")
 
 
-def _short(name: str, limit: int = 46) -> str:
+def _short(name: str) -> str:
     name = re.sub(r"\s*\([^)]*\)\s*$", "", name).rstrip(". ")   # "arXiv (Cornell University)" -> "arXiv"
     if name.isupper() and " " in name:                           # a shouted title, not an acronym
         name = name.title()
-    return name if len(name) <= limit else name[: limit - 1].rstrip() + "…"
+    return textwrap.fill(name, 34)
 
 
 def fig4_top_sources_by_type(data: C.Data) -> None:
+    """Per type: its five most common venues, and how many papers have no venue at all."""
     df = data.fetch("fig4_top_sources_by_type")
-    fig, axes = plt.subplots(1, 3, figsize=(13.6, 4.4))
-    for ax, key in zip(axes, MAIN_TYPES):
-        label, color = TYPES[key]
-        d = df[df["type"] == key].sort_values("rank_in_type")
-        bars = ax.barh(np.arange(len(d)), d["works"], 0.55, color=color, zorder=3)
-        C.bar_labels(ax, bars, [f"{v:,.0f}" for v in d["works"]], horizontal=True)
-        ax.set_yticks(np.arange(len(d)))
-        ax.set_yticklabels([_short(n) for n in d["source_name"]])
+    for key in MAIN_TYPES:
+        d = df[df["type"] == key].sort_values("rank_in_type").head(5)
+        missing = int(d["works_without_source"].iloc[0])
+        names = [_short(n) for n in d["source_name"]] + ["No venue recorded"]
+        values = list(d["works"]) + [missing]
+        total = int(d["works_in_type"].iloc[0])
+        fig, ax = C.new_figure()
+        y = np.arange(len(values))
+        bars = ax.barh(y, values, 0.6, color=[C.COLORS[key]] * len(d) + [C.NEUTRAL], zorder=3)
+        C.bar_labels(ax, bars, [f"{v:,}  ({v / total:.0%})" for v in values], horizontal=True)
+        ax.set_yticks(y)
+        ax.set_yticklabels(names)
         ax.invert_yaxis()
-        ax.set_xlim(0, d["works"].max() * 1.16)
+        ax.set_xlim(0, max(values) * 1.3)
         ax.xaxis.set_major_formatter(thousands)
-        total, missing = d["works_in_type"].iloc[0], d["works_without_source"].iloc[0]
-        ax.set_title(f"{label}: {total:,.0f} papers", loc="left", pad=19)
-        ax.annotate(f"{missing:,.0f} ({missing / total:.0%}) have no venue recorded", (0, 1),
-                    xycoords="axes fraction", xytext=(0, 5), textcoords="offset points",
-                    fontsize=8, color=C.MUTED, ha="left", va="bottom")
-        C.style_axes(ax, grid="x")
-    fig.tight_layout(w_pad=2.0)
-    C.titles(fig, "Where RAG papers appear: the ten most common venues per type",
-             "Papers per venue, 2019–2026. Each panel has its own scale.",
-             f"{C.SOURCE} Venue names as recorded by OpenAlex, shortened. "
-             "Zenodo is a repository, yet OpenAlex types 768 of its deposits as articles.")
-    data.save(fig, "fig4_top_sources_by_type")
+        ax.set_xlabel(f"Papers (of {total:,} {PLURAL[key].lower()})")
+        C.finish(fig, ax, f"Top Venues: {PLURAL[key]}")
+        data.save(fig, f"fig4_sources_{key.replace('-', '_')}")
 
 
 def main() -> None:

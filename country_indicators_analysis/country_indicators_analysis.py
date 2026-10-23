@@ -37,10 +37,6 @@ import argparse
 import sys
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -49,6 +45,10 @@ from scipy import stats
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 ROOT = Path(__file__).resolve().parent
+# The house style (fonts, colours, canvas) is shared with analysis/: in the repository it is
+# analysis/common.py; a copy of this folder handed over on its own carries common.py inside.
+sys.path.insert(0, str(ROOT if (ROOT / "common.py").exists() else ROOT.parent / "analysis"))
+import common as C  # noqa: E402
 SQL_DIR = ROOT / "sql"
 OUT_DIR = ROOT / "output"
 
@@ -64,12 +64,6 @@ INDICATORS = {
 TERMS_TOTAL = ["ln_gdp_pc", "ln_rd_pct", "ln_pop"]
 TERMS_PC = ["ln_gdp_pc", "ln_rd_pct"]
 TERM_LABELS = {"ln_gdp_pc": "GDP per capita", "ln_rd_pct": "R&D % of GDP", "ln_pop": "Population"}
-
-# Chart colours (dataviz reference palette, light mode)
-INK, INK_2, GRID = "#0b0b0b", "#52514e", "#e6e5e0"
-NEUTRAL = "#a3a29d"
-ABOVE, BELOW = "#2a78d6", "#e34948"            # diverging poles: more / fewer papers than predicted
-SERIES = ["#2a78d6", "#eb6834", "#1baf7a"]     # categorical slots 1-3 (all-pairs validated)
 
 
 def load_from_db() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -215,134 +209,144 @@ def elasticity_text(term, b):
             f"x2 -> x{2 ** b:.2f} papers")
 
 
+def samples(df):
+    """(full, sub, dropped): countries with all three indicators; those of them with >= MIN_PAPERS
+    papers (the main sample); countries with enough papers but a missing indicator."""
+    have_ind = df[["gdp_pc", "rd_pct", "population"]].notna().all(axis=1)
+    full = df[have_ind].copy()
+    sub = full[full["papers"] >= MIN_PAPERS].copy()
+    dropped = df[(df["papers"] >= MIN_PAPERS) & ~have_ind]
+    return full, sub, dropped
+
+
+def fit_models(sub, full):
+    """Every model the write-up reports: NB on both samples, the OLS cross-check, the coefficient
+    table and the outlier tables of the main NB fits. Shared with the website build."""
+    fits = {}
+    for sample_name, data in [("ge5", sub), ("all", full)]:
+        fits[("total", sample_name)] = fit_nb(data, TERMS_TOTAL, per_capita=False)
+        fits[("per_capita", sample_name)] = fit_nb(data, TERMS_PC, per_capita=True)
+    ols = {"total": smf.ols("ln_papers ~ " + " + ".join(TERMS_TOTAL), sub).fit(cov_type="HC3"),
+           "per_capita": smf.ols("np.log(papers_per_m) ~ " + " + ".join(TERMS_PC), sub).fit(cov_type="HC3")}
+    coefs = pd.concat([
+        coef_table(fits[("total", "ge5")][0], "NB, ≥5 papers").assign(outcome="total"),
+        coef_table(fits[("total", "all")][0], "NB, all countries").assign(outcome="total"),
+        coef_table(ols["total"], "OLS log, ≥5 papers").assign(outcome="total"),
+        coef_table(fits[("per_capita", "ge5")][0], "NB, ≥5 papers").assign(outcome="per_capita"),
+        coef_table(fits[("per_capita", "all")][0], "NB, all countries").assign(outcome="per_capita"),
+        coef_table(ols["per_capita"], "OLS log, ≥5 papers").assign(outcome="per_capita"),
+    ])
+    coefs = coefs[coefs["term"] != "Intercept"]
+    out_tot = outlier_table(fits[("total", "ge5")][1], sub, "total")
+    out_pc = outlier_table(fits[("per_capita", "ge5")][1], sub, "per_capita")
+    return fits, ols, coefs, out_tot, out_pc
+
+
 # --------------------------------------------------------------------------------------------
 # Figures
 # --------------------------------------------------------------------------------------------
 SHORT_NAMES = {"Hong Kong SAR, China": "Hong Kong", "Macao SAR, China": "Macao",
-               "Syrian Arab Republic": "Syria", "Yemen, Rep.": "Yemen", "Korea, Rep.": "Korea",
+               "Syrian Arab Republic": "Syria", "Yemen, Rep.": "Yemen", "Korea, Rep.": "South Korea",
                "Egypt, Arab Rep.": "Egypt", "Iran, Islamic Rep.": "Iran", "Viet Nam": "Vietnam",
                "Turkiye": "Türkiye"}
+# One plot per figure (house style): an indicator on the x axis, an outcome on the y axis.
+X_AXES = {"gdp_pc": ("GDP per Capita", "GDP per capita (US$, log scale)"),
+          "rd_pct": ("R&D Spending", "R&D expenditure (% of GDP, log scale)"),
+          "pop_m": ("Population", "Population (millions, log scale)")}
+Y_AXES = {"papers": ("RAG Papers", "RAG papers (log scale)"),
+          "papers_per_m": ("RAG Papers per Million People", "RAG papers per million people (log scale)")}
 
 
-def style_axes(ax):
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(INK_2)
-    ax.tick_params(colors=INK_2, labelsize=8)
-    ax.grid(True, color=GRID, linewidth=0.6)
-    ax.set_axisbelow(True)
-    ax.xaxis.label.set_color(INK_2)
-    ax.yaxis.label.set_color(INK_2)
+def label_points(ax, xs, ys, names, all_x, all_y):
+    """Name the given countries, each tied to its point by a leader line; labels avoid every
+    point on the plot, each other and the legend."""
+    C.label_scatter(ax, xs, ys, [SHORT_NAMES.get(n, n) for n in names],
+                    avoid=np.column_stack([np.asarray(all_x, float), np.asarray(all_y, float)]))
 
 
-def label_points(ax, xs, ys, names, color=INK_2, size=7.5):
-    """Direct labels; neighbours (in log space) alternate above/below so they don't collide."""
-    names = [SHORT_NAMES.get(n, n) for n in names]
-    pts = sorted(zip(np.log10(np.asarray(xs, float)), np.log10(np.asarray(ys, float)), names))
-    placed = []
-    for lx, ly, name in pts:
-        crowded = any(abs(lx - px) < 0.5 and abs(ly - py) < 0.15 for px, py, _ in placed)
-        below = crowded and placed[-1][2] == "up"
-        ax.annotate(name, (10 ** lx, 10 ** ly), fontsize=size, color=color,
-                    xytext=(5, -10) if below else (5, 4), textcoords="offset points")
-        placed.append((lx, ly, "down" if below else "up"))
-
-
-def fig_trendlines(sub, path) -> pd.DataFrame:
-    """Descriptive: one indicator at a time, power-law trendline (straight line on log-log axes)."""
-    xs = [("gdp_pc", "GDP per capita (US$)"), ("rd_pct", "R&D expenditure (% of GDP)"),
-          ("pop_m", "Population (millions)")]
-    ys = [("papers", "RAG papers"), ("papers_per_m", "RAG papers per million people")]
-    fig, axes = plt.subplots(2, 3, figsize=(13, 8))
+def fig_trendlines(sub, out_dir) -> pd.DataFrame:
+    """Descriptive: one indicator against one outcome per figure, with a power-law trendline
+    (a straight line on log-log axes). Five figures: papers per million vs population is not
+    drawn, as its slope is just (papers vs population) - 1; its row stays in the table."""
     rows = []
-    for r, (ycol, ylab) in enumerate(ys):
-        for c, (xcol, xlab) in enumerate(xs):
-            ax = axes[r, c]
+    for ycol, (ytitle, ylab) in Y_AXES.items():
+        for xcol, (xtitle, xlab) in X_AXES.items():
             lx, ly = np.log(sub[xcol]), np.log(sub[ycol])
             fit = stats.linregress(lx, ly)
             rows.append({"outcome": ycol, "predictor": xcol, "slope": fit.slope,
                          "r2": fit.rvalue ** 2, "p_value": fit.pvalue})
-            ax.scatter(sub[xcol], sub[ycol], s=30, color=NEUTRAL, edgecolor="white", linewidth=0.8)
+            if (ycol, xcol) == ("papers_per_m", "pop_m"):
+                continue
+            fig, ax = C.new_figure()
+            ax.scatter(sub[xcol], sub[ycol], s=90, color=C.NEUTRAL, edgecolor="white", linewidth=1.2, zorder=3,
+                       label=f"Country (n = {len(sub)}, ≥{MIN_PAPERS} papers)")
             grid = np.linspace(lx.min(), lx.max(), 50)
-            ax.plot(np.exp(grid), np.exp(fit.intercept + fit.slope * grid), color=ABOVE, lw=2)
+            ax.plot(np.exp(grid), np.exp(fit.intercept + fit.slope * grid), color=C.BLUE, lw=3, zorder=4,
+                    label=f"Trendline: slope {fit.slope:+.2f}, R² {fit.rvalue ** 2:.2f}")
+            # Named: the three furthest from the trendline, and the two largest values.
+            resid = ly - (fit.intercept + fit.slope * lx)
+            top = resid.abs().nlargest(3).index.union(sub[ycol].nlargest(2).index)
             ax.set_xscale("log")
             ax.set_yscale("log")
+            C.plain_log_ticks(ax)
             ax.set_xlabel(xlab)
             ax.set_ylabel(ylab)
-            ax.set_title(f"slope {fit.slope:+.2f}   R² {fit.rvalue ** 2:.2f}", fontsize=9,
-                         color=INK, loc="left")
-            resid = ly - (fit.intercept + fit.slope * lx)
-            top = resid.abs().nlargest(3).index
-            label_points(ax, sub.loc[top, xcol], sub.loc[top, ycol], sub.loc[top, "name"], size=7)
-            style_axes(ax)
-    fig.suptitle(f"One indicator at a time: power-law trendlines (countries with ≥{MIN_PAPERS} papers, "
-                 f"n={len(sub)})", color=INK, fontsize=12, x=0.01, ha="left")
-    fig.tight_layout()
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
+            C.legend(ax, loc="best")
+            C.finish(fig, ax, f"{ytitle} vs. {xtitle}")
+            label_points(ax, sub.loc[top, xcol], sub.loc[top, ycol], sub.loc[top, "name"], sub[xcol], sub[ycol])
+            C.save(fig, out_dir / f"fig1_trend_{ycol}_vs_{xcol}")
     return pd.DataFrame(rows)
 
 
-def fig_observed_vs_predicted(panels, path):
-    fig, axes = plt.subplots(1, 2, figsize=(13, 6))
-    for ax, (title, t, actual, predicted) in zip(axes, panels):
+def fig_observed_vs_predicted(panels, out_dir):
+    """Actual vs predicted, one figure per model (total papers, papers per million)."""
+    for name, (title, t, actual, predicted) in zip(("total", "per_capita"), panels):
         flagged = t["flag_residual"] | t["flag_influential"]
-        colors = np.where(~flagged, NEUTRAL, np.where(t["stud_resid"] > 0, ABOVE, BELOW))
-        ax.scatter(t[predicted], t[actual], s=34, c=colors, edgecolor="white", linewidth=0.8, zorder=3)
+        fig, ax = C.new_figure()
+        for mask, colour, text in ((~flagged, C.NEUTRAL, "Within expectation"),
+                                   (flagged & (t["stud_resid"] > 0), C.UP, "More papers than predicted (flagged)"),
+                                   (flagged & (t["stud_resid"] <= 0), C.DOWN, "Fewer papers than predicted (flagged)")):
+            ax.scatter(t.loc[mask, predicted], t.loc[mask, actual], s=90, color=colour, edgecolor="white",
+                       linewidth=1.2, zorder=3, label=text)
         lo = min(t[predicted].min(), t[actual].min()) * 0.7
         hi = max(t[predicted].max(), t[actual].max()) * 1.4
-        ax.plot([lo, hi], [lo, hi], color=INK_2, lw=1, ls="--", zorder=2)
-        f = t[flagged]
-        label_points(ax, f[predicted], f[actual], f["country"], color=INK)
+        ax.plot([lo, hi], [lo, hi], color=C.INK_2, lw=1.5, ls="--", zorder=2, label="Actual = predicted")
         ax.set_xscale("log")
         ax.set_yscale("log")
+        C.plain_log_ticks(ax)
         ax.set_xlim(lo, hi)
         ax.set_ylim(lo, hi)
-        ax.set_xlabel("Predicted by the model")
-        ax.set_ylabel("Actual")
-        ax.set_title(title, loc="left", fontsize=10, color=INK)
-        style_axes(ax)
-    handles = [plt.Line2D([], [], marker="o", ls="", color=ABOVE, label="More papers than predicted (flagged)"),
-               plt.Line2D([], [], marker="o", ls="", color=BELOW, label="Fewer papers than predicted (flagged)"),
-               plt.Line2D([], [], marker="o", ls="", color=NEUTRAL, label="Within expectation")]
-    fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False, fontsize=9)
-    fig.suptitle(f"Negative binomial, countries with ≥{MIN_PAPERS} papers: actual vs predicted. "
-                 "Flagged: |studentized residual| > 2 or Cook's D > 4/n",
-                 color=INK, fontsize=12, x=0.01, ha="left")
-    fig.tight_layout(rect=(0, 0.05, 1, 1))
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
+        ax.set_xlabel("Predicted by the model (log scale)")
+        ax.set_ylabel("Actual (log scale)")
+        C.legend(ax, loc="upper left")
+        C.finish(fig, ax, f"{title}: Actual vs. Predicted")
+        f = t[flagged]
+        label_points(ax, f[predicted], f[actual], f["country"], t[predicted], t[actual])
+        C.save(fig, out_dir / f"fig2_actual_vs_predicted_{name}")
 
 
-def fig_coefficients(coefs, path):
-    """Dot-and-whisker: NB (>=5) vs NB (all) vs the OLS cross-check, for both outcomes."""
+def fig_coefficients(coefs, out_dir):
+    """Dot-and-whisker per outcome: NB (>=5) vs NB (all) vs the OLS cross-check."""
     models = ["NB, ≥5 papers", "NB, all countries", "OLS log, ≥5 papers"]
-    labels = [f"Negative binomial, countries with ≥{MIN_PAPERS} papers (main)",
-              "Negative binomial, all countries with indicators",
-              f"OLS on log(papers), ≥{MIN_PAPERS} papers (cross-check)"]
-    panels = [("Total papers", "total", TERMS_TOTAL), ("Papers per million people", "per_capita", TERMS_PC)]
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2), sharex=True)
-    for ax, (title, outcome, terms) in zip(axes, panels):
+    labels = [f"Negative binomial, ≥{MIN_PAPERS} papers (main)", "Negative binomial, all countries",
+              f"OLS on log(papers), ≥{MIN_PAPERS} papers"]
+    panels = [("total", "Total Papers", TERMS_TOTAL), ("per_capita", "Papers per Million People", TERMS_PC)]
+    for outcome, title, terms in panels:
+        fig, ax = C.new_figure()
         for j, m in enumerate(models):
             d = coefs[(coefs["model"] == m) & (coefs["outcome"] == outcome)].set_index("term").loc[terms]
             y = np.arange(len(terms)) + (j - 1) * 0.22
             ax.errorbar(d["coef"], y, xerr=[d["coef"] - d["ci_low"], d["ci_high"] - d["coef"]],
-                        fmt="o", ms=7, color=SERIES[j], lw=2, capsize=0)
-        ax.axvline(0, color=INK_2, lw=1)
+                        fmt="o", ms=10, color=C.SERIES[j], lw=3, capsize=0, label=labels[j])
+        ax.axvline(0, color=C.INK_2, lw=1)
         ax.set_yticks(range(len(terms)))
         ax.set_yticklabels([TERM_LABELS[t] for t in terms])
         ax.invert_yaxis()
-        ax.set_xlabel("Elasticity (95% CI)")
-        ax.set_title(title, loc="left", fontsize=10, color=INK)
-        style_axes(ax)
-    handles = [plt.Line2D([], [], marker="o", color=SERIES[j], lw=2, label=lab) for j, lab in enumerate(labels)]
-    fig.legend(handles=handles, loc="lower center", ncol=3, frameon=False, fontsize=8.5)
-    fig.suptitle("Elasticities with 95% CIs (per-capita models: log population as offset, i.e. fixed at 1)",
-                 color=INK, fontsize=11, x=0.01, ha="left")
-    fig.tight_layout(rect=(0, 0.07, 1, 1))
-    fig.savefig(path, dpi=150)
-    plt.close(fig)
+        ax.set_xlim(-0.6, 1.5)
+        ax.set_xlabel("Elasticity (95% confidence interval)")
+        C.legend(ax, loc="upper left")
+        C.finish(fig, ax, f"Effect of Country Indicators on {title}")
+        C.save(fig, out_dir / f"fig3_coefficients_{outcome}")
 
 
 # --------------------------------------------------------------------------------------------
@@ -354,17 +358,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="RAG papers vs country indicators")
     parser.add_argument("--from-csv", action="store_true",
                         help="reuse output/01-03_*.csv instead of querying the database")
-    from_csv = parser.parse_args().from_csv
+    parser.add_argument("--strict", action="store_true",
+                        help="fail instead of falling back to the CSVs when there is no database")
+    args = parser.parse_args()
+    from_csv = args.from_csv
     if not from_csv and not (ROOT.parent / ".env").exists():
+        if args.strict:
+            raise SystemExit("--strict: no project .env found, cannot query the database.")
         print("No project database around this folder: reusing output/01-03_*.csv (same as --from-csv).\n")
         from_csv = True
     counts, indicators, profiles = load_from_csv() if from_csv else load_from_db()
     df = build_country_table(counts, indicators, profiles)
 
-    have_ind = df[["gdp_pc", "rd_pct", "population"]].notna().all(axis=1)
-    full = df[have_ind].copy()                                   # all countries with indicators
-    sub = full[full["papers"] >= MIN_PAPERS].copy()              # main sample
-    dropped = df[(df["papers"] >= MIN_PAPERS) & ~have_ind]
+    full, sub, dropped = samples(df)
     df.to_csv(OUT_DIR / "country_table.csv", encoding=CSV_ENCODING)
 
     print("RAG papers vs country indicators")
@@ -383,16 +389,13 @@ def main() -> None:
     X = sub[TERMS_TOTAL].assign(const=1.0).values
     print("VIF: " + ", ".join(f"{t} {variance_inflation_factor(X, i):.2f}" for i, t in enumerate(TERMS_TOTAL)))
 
-    trend = fig_trendlines(sub, OUT_DIR / "fig1_trendlines.png")
+    trend = fig_trendlines(sub, OUT_DIR)
     trend.to_csv(OUT_DIR / "trendlines_single_indicator.csv", index=False, encoding=CSV_ENCODING)
     print("\nDescriptive single-indicator trendlines (log-log slope)")
     print(trend.round(3).to_string(index=False))
 
-    # --- negative binomial models
-    fits = {}
-    for sample_name, data in [("ge5", sub), ("all", full)]:
-        fits[("total", sample_name)] = fit_nb(data, TERMS_TOTAL, per_capita=False)
-        fits[("per_capita", sample_name)] = fit_nb(data, TERMS_PC, per_capita=True)
+    # --- negative binomial models, OLS cross-check, coefficient and outlier tables
+    fits, ols, coefs, out_tot, out_pc = fit_models(sub, full)
     for (outcome, sample_name), (mle, _) in fits.items():
         print("\n" + "=" * 78 + f"\nNB  outcome={outcome}  sample={sample_name}\n" + "=" * 78)
         print(mle.summary())
@@ -404,24 +407,13 @@ def main() -> None:
             print(f"  H0 population elasticity = 1: z = {z:.2f}, p = {2 * stats.norm.sf(abs(z)):.4f}")
 
     # --- OLS cross-check (not reported; only to confirm it agrees with the NB fits)
-    ols = {"total": smf.ols("ln_papers ~ " + " + ".join(TERMS_TOTAL), sub).fit(cov_type="HC3"),
-           "per_capita": smf.ols("np.log(papers_per_m) ~ " + " + ".join(TERMS_PC), sub).fit(cov_type="HC3")}
     print("\nOLS cross-check (log outcome, >= 5 sample, HC3)")
     for outcome, res in ols.items():
         print(f"  {outcome}: " + ", ".join(f"{k} {v:+.3f}" for k, v in res.params.items() if k != "Intercept")
               + f"   R2 {res.rsquared:.2f}")
 
-    coefs = pd.concat([
-        coef_table(fits[("total", "ge5")][0], "NB, ≥5 papers").assign(outcome="total"),
-        coef_table(fits[("total", "all")][0], "NB, all countries").assign(outcome="total"),
-        coef_table(ols["total"], "OLS log, ≥5 papers").assign(outcome="total"),
-        coef_table(fits[("per_capita", "ge5")][0], "NB, ≥5 papers").assign(outcome="per_capita"),
-        coef_table(fits[("per_capita", "all")][0], "NB, all countries").assign(outcome="per_capita"),
-        coef_table(ols["per_capita"], "OLS log, ≥5 papers").assign(outcome="per_capita"),
-    ])
-    coefs = coefs[coefs["term"] != "Intercept"]
     coefs.to_csv(OUT_DIR / "coefficients.csv", index=False, encoding=CSV_ENCODING)
-    fig_coefficients(coefs, OUT_DIR / "fig3_coefficients.png")
+    fig_coefficients(coefs, OUT_DIR)
 
     cmp = pd.concat([
         compare(fits[("total", "ge5")][0], fits[("total", "all")][0], TERMS_TOTAL).assign(outcome="total"),
@@ -432,8 +424,6 @@ def main() -> None:
     print(cmp.round(3).to_string(index=False))
 
     # --- outliers, from the main (>= 5) NB models
-    out_tot = outlier_table(fits[("total", "ge5")][1], sub, "total")
-    out_pc = outlier_table(fits[("per_capita", "ge5")][1], sub, "per_capita")
     pd.concat([out_tot, out_pc]).round(3).to_csv(OUT_DIR / "outliers.csv", encoding=CSV_ENCODING)
     for label, t in [("total papers", out_tot), ("papers per million", out_pc)]:
         flagged = t[t["flag_residual"] | t["flag_influential"]]
@@ -450,9 +440,9 @@ def main() -> None:
         print(f"  {outcome}: n {len(sub)} -> {len(keep)} (dropped: {', '.join(t.loc[t['flag_influential'], 'country'])})")
         print(both.round(3).to_string())
 
-    fig_observed_vs_predicted([("Total RAG papers", out_tot, "papers", "predicted_papers"),
-                               ("RAG papers per million people", out_pc, "papers_per_m", "predicted_per_m")],
-                              OUT_DIR / "fig2_actual_vs_predicted.png")
+    fig_observed_vs_predicted([("Total RAG Papers", out_tot, "papers", "predicted_papers"),
+                               ("RAG Papers per Million People", out_pc, "papers_per_m", "predicted_per_m")],
+                              OUT_DIR)
     print(f"\nOutputs written to {OUT_DIR}")
 
 
