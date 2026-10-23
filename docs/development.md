@@ -73,7 +73,6 @@ when a row arrived and from which release, but do not filter external facts by t
 - Connect with host `127.0.0.1`, not `localhost` (Windows resolves `localhost` to `::1` first, which
   Docker Desktop leaves unanswered).
 - `docker compose exec postgres psql -U scholarscope -d scholarscope` opens a SQL shell.
-- `docker compose --profile graph up -d` also starts Neo4j (not needed until the graph milestone).
 
 ## Adding a migration
 
