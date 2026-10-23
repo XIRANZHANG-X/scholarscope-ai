@@ -22,6 +22,7 @@
   每张图旁边都有它所画数据的 CSV。
 - 一个单文件网页（`site/dist/scholarscope.html`，约 6 MB），包含 35 张图的可交互版本。
   双击就能离线打开，不需要服务器，也不需要联网。
+  **只想看结果？** 直接从 [Release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22) 下载生成好的 `scholarscope.html`。
 
 ---
 

@@ -25,6 +25,7 @@ CSV files are only copies of query results.
   300 dpi (4000 × 2250) plus PDF, each with the CSV of exactly what it draws.
 - A single-file website (`site/dist/scholarscope.html`, ~6 MB) with interactive versions of all
   35 charts. It opens offline with a double-click: no server, no internet connection.
+  **Just want to look?** Download the prebuilt `scholarscope.html` from the [release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22).
 
 ---
 
