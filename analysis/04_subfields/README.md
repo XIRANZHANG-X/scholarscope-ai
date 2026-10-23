@@ -8,6 +8,8 @@ uv run python analysis/04_subfields/make_figures.py [--strict | --from-csv]
 
 本目录 4 张图：fig1_sizes_method、fig1_sizes_application（两组子方向的规模）、fig2_subfield_share_shift（占比变化）、fig3_subfield_cooccurrence（共现）。
 
+表中的 CSV（`output/*.csv`）是连库运行时在本地生成的查询结果，不在仓库里。
+
 ---
 
 ## 这里做的不是聚类，是规则打标签
@@ -57,7 +59,7 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 | | |
 |---|---|
 | SQL | [`sql/fig1_subfield_sizes.sql`](sql/fig1_subfield_sizes.sql)、[`sql/fig1b_tagging_coverage.sql`](sql/fig1b_tagging_coverage.sql)（覆盖率总数，写在下面） |
-| CSV | [`output/fig1_subfield_sizes.csv`](output/fig1_subfield_sizes.csv)、[`output/fig1b_tagging_coverage.csv`](output/fig1b_tagging_coverage.csv) |
+| CSV | `output/fig1_subfield_sizes.csv`、`output/fig1b_tagging_coverage.csv` |
 | 列 | `papers` 标题或摘要匹配的篇数；`papers_title` 标题匹配的篇数；`papers_with_abstract` 分母；`share_pct`、`share_title_pct` 两个口径的占比 |
 
 图上能读出的：
@@ -76,7 +78,7 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 | | |
 |---|---|
 | SQL | [`sql/fig2_subfield_share_by_year.sql`](sql/fig2_subfield_share_by_year.sql) |
-| CSV | [`output/fig2_subfield_share_by_year.csv`](output/fig2_subfield_share_by_year.csv) |
+| CSV | `output/fig2_subfield_share_by_year.csv` |
 | 列 | `year`；`papers`、`papers_title` 两个口径的篇数；`papers_with_abstract` 该年有摘要的论文数（分母）；`share_pct`、`share_title_pct` |
 
 每个子方向一行：空心点是 2024 年占比，实心点是 2026 年至今，按「标题或摘要」口径；蓝色是上升、红色是下降，
@@ -88,7 +90,7 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 - Fine-tuning 是唯一明显下降的：21% → 13%（−8 pp）。
 - Healthcare、Education 基本持平。
 
-**只看标题的变化**没有画进图，数字在 [`output/fig4_subfield_share_change.csv`](output/fig4_subfield_share_change.csv)
+**只看标题的变化**没有画进图，数字在 `output/fig4_subfield_share_change.csv`
 （SQL：[`sql/fig4_subfield_share_change.sql`](sql/fig4_subfield_share_change.sql)），
 列是 `share_2024_pct` / `share_2025_pct` / `share_2026_pct`、`change_pp`，以及同样的 `*_title_*` 列：
 
@@ -109,7 +111,7 @@ CSV 里有 2023 年的行，但那年只有一百多篇，图上从 2024 年开�
 | | |
 |---|---|
 | SQL | [`sql/fig3_subfield_cooccurrence.sql`](sql/fig3_subfield_cooccurrence.sql)（标签表自连接） |
-| CSV | [`output/fig3_subfield_cooccurrence.csv`](output/fig3_subfield_cooccurrence.csv) |
+| CSV | `output/fig3_subfield_cooccurrence.csv` |
 | 列 | 每对方向出现两行。`papers_both` 同时带两个标签的篇数；`papers_a`、`papers_b` 各自的篇数；`share_of_a_pct` 占 A 的比例；`lift` 见下 |
 
 `lift` 是「实际同时出现的次数 ÷ 如果两者无关时预期的次数」。1.0 表示和随机一样，2.0 表示多一倍，0.5 表示少一半。

@@ -18,6 +18,8 @@ uv run python analysis/02_publication_types/make_figures.py [--strict | --from-c
 | `article` | 4,187 | Article |
 | `review` | 65 | Review |
 
+表中的 CSV（`output/*.csv`）是连库运行时在本地生成的查询结果，不在仓库里。
+
 ---
 
 ## 先看这四个数据坑
@@ -38,7 +40,7 @@ uv run python analysis/02_publication_types/make_figures.py [--strict | --from-c
 | | |
 |---|---|
 | SQL | [`sql/fig1_type_by_quarter.sql`](sql/fig1_type_by_quarter.sql) |
-| CSV | [`output/fig1_type_by_quarter.csv`](output/fig1_type_by_quarter.csv) |
+| CSV | `output/fig1_type_by_quarter.csv` |
 | 列 | `quarter` 如 `2025Q3`；`type`；`works` 篇数；`year_only_date` 该年因日期只到年而被剔除的篇数（同一年的每行相同） |
 
 图上能读出的：
@@ -57,7 +59,7 @@ uv run python analysis/02_publication_types/make_figures.py [--strict | --from-c
 | | |
 |---|---|
 | SQL | [`sql/fig2a_type_share_by_year.sql`](sql/fig2a_type_share_by_year.sql)（fig2）、[`sql/fig2b_type_mix_by_theme.sql`](sql/fig2b_type_mix_by_theme.sql)（fig2b） |
-| CSV | [`output/fig2a_type_share_by_year.csv`](output/fig2a_type_share_by_year.csv)、[`output/fig2b_type_mix_by_theme.csv`](output/fig2b_type_mix_by_theme.csv) |
+| CSV | `output/fig2a_type_share_by_year.csv`、`output/fig2b_type_mix_by_theme.csv` |
 | 列 | `works` 篇数；`works_in_year` / `works_in_theme` 分母；`share_pct` 占比 |
 
 图上能读出的：
@@ -79,7 +81,7 @@ fig2b 的数据来自 `meta.recall_probes`，其他主题只有计数；LLM、Ag
 | | |
 |---|---|
 | SQL | [`sql/fig3_citations_by_type.sql`](sql/fig3_citations_by_type.sql) |
-| CSV | [`output/fig3_citations_by_type.csv`](output/fig3_citations_by_type.csv) |
+| CSV | `output/fig3_citations_by_type.csv` |
 | 列 | `cohort_year` 发表年；`works`；`cited_share_pct` 至少被引一次的比例；`mean_citations` 平均被引；`median_citations` 中位数；`p90_citations` 第 90 百分位；`max_citations` |
 
 老论文有更多时间被引，所以**只在同一发表年内部比较**。被引数截至采集日 2026-09-22。图上能读出的：
@@ -101,7 +103,7 @@ Review 只有 5 篇和 22 篇，留在 CSV 里但没有画。这是相关性，�
 | | |
 |---|---|
 | SQL | [`sql/fig4_top_sources_by_type.sql`](sql/fig4_top_sources_by_type.sql)（用了窗口函数 `row_number`） |
-| CSV | [`output/fig4_top_sources_by_type.csv`](output/fig4_top_sources_by_type.csv) |
+| CSV | `output/fig4_top_sources_by_type.csv` |
 | 列 | `rank_in_type` 类型内排名；`source_name` 载体全名；`source_type`；`works`；`share_of_type_pct` 占该类型的比例；`works_in_type`；`works_without_source` 该类型里没有载体记录的篇数 |
 
 图上能读出的：

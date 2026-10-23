@@ -169,6 +169,9 @@ class Data:
         if name not in self._cache:
             csv = self.out_dir / f"{name}.csv"
             if self.from_csv:
+                if not csv.exists():
+                    raise SystemExit(f"  No saved query result {csv.name}: CSVs are not in the repository. "
+                                     "Run once against the database (see README) before using --from-csv.")
                 # "NA" is Namibia's country code, not a missing value.
                 frame = pd.read_csv(csv, keep_default_na=False, na_values=[""])
             else:

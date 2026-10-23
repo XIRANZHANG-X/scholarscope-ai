@@ -17,12 +17,14 @@ answers five questions with saved SQL queries:
 | 5 | Does country wealth or R&D spending predict output? | Papers per person scale about 1:1 with GDP per capita (negative binomial elasticity 1.07); R&D share of GDP adds nothing measurable once wealth is controlled. |
 
 Every number in the figures and on the website comes from a SQL query against the database;
-CSV files are only copies of query results.
+The repository holds the queries and the code, not the data: query results (CSV) are written
+locally when you run the scripts and are not committed.
 
 **Outputs**
 
 - 35 figures for slides (`analysis/*/output/`, `country_indicators_analysis/output/`): PNG at
-  300 dpi (4000 × 2250) plus PDF, each with the CSV of exactly what it draws.
+  300 dpi (4000 × 2250) plus PDF. Running the scripts also saves each query's result as a CSV
+  next to its figure (local only).
 - A single-file website (`site/dist/scholarscope.html`, ~6 MB) with interactive versions of all
   35 charts. It opens offline with a double-click: no server, no internet connection.
   **Just want to look?** Download the prebuilt `scholarscope.html` from the [release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22).
@@ -59,9 +61,8 @@ uv run scholarscope quality
 ```
 
 This pulls the corpus as it stands on OpenAlex today. OpenAlex keeps adding and updating
-records, so your counts will differ slightly from the figures and CSVs committed here (collected
-on 22 Sep 2026). The committed `output/*.csv` files are the exact query results behind those
-figures. Command details, exit codes and costs: [`docs/development.md`](docs/development.md).
+records, so your counts will differ slightly from the figures committed here (collected on
+22 Sep 2026). Command details, exit codes and costs: [`docs/development.md`](docs/development.md).
 
 Then add Taiwan once (it is not in the World Bank data; re-running is harmless):
 
@@ -77,8 +78,8 @@ uv run python analysis/run_all.py --strict
 
 Runs the five analysis scripts. Each executes its `sql/*.sql` over a read-only connection, saves
 the result to `output/*.csv` and draws `output/*.png` / `*.pdf`. `--strict` fails instead of
-silently falling back to the CSVs when the database is unreachable. With `--from-csv` the
-scripts redraw from the committed CSVs without any database.
+silently falling back to the CSVs when the database is unreachable. After one database run,
+`--from-csv` redraws from those local CSVs without connecting (for restyling only).
 
 ### Step 3 · Website
 
@@ -117,8 +118,8 @@ docs/                    data dictionary, development notes, pipeline
 tests/                   unit and integration tests
 ```
 
-Each analysis folder has the same shape: `sql/` (one query per figure), `output/` (the query
-results as CSV and the figures), `make_figures.py` (one function per figure) and a `README.md`
+Each analysis folder has the same shape: `sql/` (one query per figure), `output/` (the figures;
+the query results as CSV after a local run), `make_figures.py` (one function per figure) and a `README.md`
 explaining every figure, its columns and its caveats.
 
 **Language note:** the analysis READMEs, the figure style guide

@@ -50,7 +50,11 @@ class Source:
     def get(self, folder: Path, name: str, params: dict | None = None) -> pd.DataFrame:
         self.queries.append(str((folder / "sql" / f"{name}.sql").relative_to(ROOT)).replace("\\", "/"))
         if self.from_csv:
-            return pd.read_csv(folder / "output" / f"{name}.csv", keep_default_na=False, na_values=[""])
+            csv = folder / "output" / f"{name}.csv"
+            if not csv.exists():
+                raise SystemExit(f"No saved query result {csv.name}: CSVs are not in the repository. "
+                                 "Run analysis/run_all.py against the database once before using --from-csv.")
+            return pd.read_csv(csv, keep_default_na=False, na_values=[""])
         return C.query(folder / "sql" / f"{name}.sql", params, self.conn)
 
     def scalar_row(self, sql_file: Path) -> dict:

@@ -247,7 +247,7 @@ country_indicators_analysis/
 │   ├── 01_country_paper_counts.sql    papers per country      (bridge.work_countries)
 │   ├── 02_country_indicators.sql      World Bank indicators   (external.country_indicators)
 │   └── 03_country_profiles.sql        names, regions, income  (external.country_profiles)
-└── output/
+└── output/                            (CSV files are written by each run, not committed)
     ├── fig1_trend_*.png (5), fig2_actual_vs_predicted_{total,per_capita}.png,
     │   fig3_coefficients_{total,per_capita}.png   (300 dpi, 4000×2250, each with a PDF twin)
     ├── 01_country_paper_counts.csv    what sql/01 returned  ┐ saved by every database run;

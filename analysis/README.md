@@ -5,7 +5,7 @@
 | 文件 | 是什么 |
 |---|---|
 | `sql/figN_*.sql` | 取数的 SQL。**数据只从这里进图。** |
-| `output/figN_*.csv` | 这条 SQL 的查询结果，也就是图上画的全部数据。可以直接用 Excel 或 Tableau 打开重画。 |
+| `output/figN_*.csv` | 这条 SQL 的查询结果，也就是图上画的全部数据。**连库运行时在本地生成，不进仓库**；可以用 Excel 或 Tableau 打开。 |
 | `output/figN_*.png` | 图本身，300 dpi、4000×2250（16:9 满页），可以直接放进 PPT；同名 `.pdf` 是矢量版。 |
 
 **怎么运行见下文「怎么重新生成」，完整流程见 [`../docs/流程.md`](../docs/流程.md)。**
@@ -46,7 +46,7 @@ uv run python analysis/run_all.py --strict
 uv run python site/build_site.py
 ```
 
-只想调样式、不连数据库时，给任一脚本加 `--from-csv`，用 `output/` 里已有的 CSV 重画。
+只想调样式、不连数据库时，给任一脚本加 `--from-csv`，用上一次连库运行留在本地的 CSV 重画。
 改图的位置：一张图一个函数，函数名与图片文件名相同；所有样式在 [`common.py`](common.py)。
 
 分析脚本用的是只读数据库连接，不会改动数据库里的任何东西。

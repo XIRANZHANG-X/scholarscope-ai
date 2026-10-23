@@ -105,6 +105,10 @@ def load_from_db() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
 def load_from_csv() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """The three query results as the last database run saved them (output/01-03_*.csv)."""
+    missing = [name for name in QUERIES if not (OUT_DIR / f"{name}.csv").exists()]
+    if missing:
+        raise SystemExit(f"No saved query results ({', '.join(missing)}): CSVs are not in the repository. "
+                         "Run once against the database (see README) before using --from-csv.")
     # keep_default_na=False: "NA" is Namibia's country code, not a missing value.
     counts, indicators, profiles = (pd.read_csv(OUT_DIR / f"{name}.csv", keep_default_na=False, na_values=[""])
                                     for name in QUERIES)

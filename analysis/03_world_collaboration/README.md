@@ -10,6 +10,8 @@ uv run python analysis/03_world_collaboration/make_figures.py [--strict | --from
 
 数据来自 `bridge.work_countries`（每篇论文的作者所在国家）和 `external.country_profiles`（World Bank 的国家档案）。
 
+表中的 CSV（`output/*.csv`）是连库运行时在本地生成的查询结果，不在仓库里。
+
 ---
 
 ## 先看这四个数据坑
@@ -33,7 +35,7 @@ uv run python analysis/03_world_collaboration/make_figures.py [--strict | --from
 | | |
 |---|---|
 | SQL | [`sql/fig1_papers_by_country.sql`](sql/fig1_papers_by_country.sql) |
-| CSV | [`output/fig1_papers_by_country.csv`](output/fig1_papers_by_country.csv)（138 个国家和地区的完整排名） |
+| CSV | `output/fig1_papers_by_country.csv`（138 个国家和地区的完整排名） |
 | 列 | `rank`；`country_code` 二字码；`iso3_code`；`country`；`region`、`income_level` World Bank 的地区和收入分组；`papers`；`share_of_attributed_pct` 占「有国家信息的论文」的比例；`latitude`、`longitude` 首都坐标 |
 
 图上能读出的：
@@ -57,7 +59,7 @@ fig2a 按论文数排序，蓝色是作者全在本国、橙色是跨国合作�
 | | |
 |---|---|
 | SQL | [`sql/fig2_top_countries_collab.sql`](sql/fig2_top_countries_collab.sql) |
-| CSV | [`output/fig2_top_countries_collab.csv`](output/fig2_top_countries_collab.csv) |
+| CSV | `output/fig2_top_countries_collab.csv` |
 | 列 | `papers` 总数；`domestic_only` 作者全在本国；`international` 至少还有一个别国作者；`international_share_pct`；`all_papers_with_country`、`all_international_papers` 全语料的两个总数（每行相同） |
 
 图上能读出的：
@@ -75,7 +77,7 @@ fig2a 按论文数排序，蓝色是作者全在本国、橙色是跨国合作�
 | | |
 |---|---|
 | SQL | [`sql/fig3_country_share_by_year.sql`](sql/fig3_country_share_by_year.sql) |
-| CSV | [`output/fig3_country_share_by_year.csv`](output/fig3_country_share_by_year.csv) |
+| CSV | `output/fig3_country_share_by_year.csv` |
 | 列 | `overall_rank` 该国的总排名；`papers` 该国该年论文数；`papers_with_country` 该年有国家信息的论文数（分母）；`share_pct` |
 
 图上没有图例，国家名标在每条线的末端。图上能读出的：
@@ -93,7 +95,7 @@ CSV 里 2023 年没有德国的行，因为那年是 0 篇。
 | | |
 |---|---|
 | SQL | [`sql/fig4_collab_matrix.sql`](sql/fig4_collab_matrix.sql)（`bridge.work_countries` 自连接） |
-| CSV | [`output/fig4_collab_matrix.csv`](output/fig4_collab_matrix.csv) |
+| CSV | `output/fig4_collab_matrix.csv` |
 | 列 | 每对国家出现两行（A-B 和 B-A）。`joint_papers` 合作论文数；`papers_a` A 国总论文数；`share_of_a_pct` 合作论文占 A 国论文的比例 |
 
 图上能读出的：
@@ -110,7 +112,7 @@ CSV 里 2023 年没有德国的行，因为那年是 0 篇。
 | | |
 |---|---|
 | SQL | [`sql/fig5_collab_pairs.sql`](sql/fig5_collab_pairs.sql) |
-| CSV | [`output/fig5_collab_pairs.csv`](output/fig5_collab_pairs.csv)（合作最多的 30 对国家） |
+| CSV | `output/fig5_collab_pairs.csv`（合作最多的 30 对国家） |
 | 列 | `rank`；两国的代码和名称；`joint_papers`；两国首都的经纬度 |
 
 线越粗合作论文越多；**合作最多的 5 对用深蓝粗线**，其余 25 对用浅蓝。连线画在首都之间，是示意用的曲线，不是真实路径。
@@ -128,7 +130,7 @@ fig6b 里 2026* 的柱子画成斜线填充，表示数据只到 9 月 22 日、
 | | |
 |---|---|
 | SQL | [`sql/fig6a_coverage_by_type.sql`](sql/fig6a_coverage_by_type.sql)、[`sql/fig6b_coverage_by_year.sql`](sql/fig6b_coverage_by_year.sql) |
-| CSV | [`output/fig6a_coverage_by_type.csv`](output/fig6a_coverage_by_type.csv)、[`output/fig6b_coverage_by_year.csv`](output/fig6b_coverage_by_year.csv) |
+| CSV | `output/fig6a_coverage_by_type.csv`、`output/fig6b_coverage_by_year.csv` |
 | 列 | `works` 总数；`with_country`、`with_country_pct` 有国家信息的篇数和比例；`with_affiliation_text`（仅 6a）作者位上有单位原文的篇数 |
 
 图上能读出的：

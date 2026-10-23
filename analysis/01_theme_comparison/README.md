@@ -21,6 +21,8 @@ uv run python analysis/01_theme_comparison/make_figures.py --from-csv # 不连�
 | Agents | AI agent、LLM agent、agentic AI |
 | Foundation models | foundation model、pretrained language model |
 
+表中的 CSV（`output/*.csv`）是连库运行时在本地生成的查询结果，不在仓库里。
+
 ---
 
 ## 先看这三个数据坑
@@ -41,7 +43,7 @@ uv run python analysis/01_theme_comparison/make_figures.py --from-csv # 不连�
 | | |
 |---|---|
 | SQL | [`sql/fig1_theme_yearly.sql`](sql/fig1_theme_yearly.sql) |
-| CSV | [`output/fig1_theme_yearly.csv`](output/fig1_theme_yearly.csv) |
+| CSV | `output/fig1_theme_yearly.csv` |
 | 列 | `theme` 主题；`year`；`works_cs` 计算机领域论文数（图上画的）；`works_all` 全领域论文数；`phrases` 该主题由几个短语相加 |
 
 图上能读出的：
@@ -59,7 +61,7 @@ uv run python analysis/01_theme_comparison/make_figures.py --from-csv # 不连�
 | | |
 |---|---|
 | SQL | [`sql/fig2_growth_multiple.sql`](sql/fig2_growth_multiple.sql)（用了窗口函数 `lag`） |
-| CSV | [`output/fig2_growth_multiple.csv`](output/fig2_growth_multiple.csv) |
+| CSV | `output/fig2_growth_multiple.csv` |
 | 列 | `works` 当年论文数；`works_previous_year` 上一年；`growth_multiple` 两者之比 |
 
 图上能读出的：
@@ -81,7 +83,7 @@ uv run python analysis/01_theme_comparison/make_figures.py --from-csv # 不连�
 | | |
 |---|---|
 | SQL | [`sql/fig3_phrase_yearly.sql`](sql/fig3_phrase_yearly.sql) |
-| CSV | [`output/fig3_phrase_yearly.csv`](output/fig3_phrase_yearly.csv)（8 个短语全部保留） |
+| CSV | `output/fig3_phrase_yearly.csv`（8 个短语全部保留） |
 | 列 | `query_key` 短语的内部编号；`phrase` 短语原文；`works_cs` / `works_all` 同图 1 |
 
 图上画 5 条线，只在末端标名称和 2026 年至今的篇数，没有图例：
@@ -101,7 +103,7 @@ PLM（pretrained language model）。"ChatGPT" 和 "foundation model" 没有画�
 | | |
 |---|---|
 | SQL | [`sql/fig4_rag_per_100_llm.sql`](sql/fig4_rag_per_100_llm.sql) |
-| CSV | [`output/fig4_rag_per_100_llm.csv`](output/fig4_rag_per_100_llm.csv) |
+| CSV | `output/fig4_rag_per_100_llm.csv` |
 | 列 | `field_scope` `cs` 或 `all`；`rag_works`、`llm_works` 两个短语各自的论文数；`rag_per_100_llm` |
 
 图上能读出的：计算机领域从 2023 年的 1.5 升到 2025 年的 11.7，2026 年至今 13.1。

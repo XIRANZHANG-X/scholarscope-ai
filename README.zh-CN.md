@@ -14,12 +14,12 @@
 | 4 | 研究什么？什么在升温？ | Agents 的占比从 11% 升到 24%（2024 → 2026）；微调从 21% 降到 13%。 |
 | 5 | 国家的富裕程度和研发投入能预测产出吗？ | 人均论文数与人均 GDP 大致 1:1 同比例增长（负二项回归弹性 1.07）；控制了财富之后，研发占 GDP 比例没有额外作用。 |
 
-图和网页上的每个数都来自对数据库的 SQL 查询；CSV 只是查询结果的副本。
+图和网页上的每个数都来自对数据库的 SQL 查询。仓库里只放查询和代码，不放数据：查询结果（CSV）在本地运行脚本时生成，不提交。
 
 **产出**
 
 - 35 张图（`analysis/*/output/`、`country_indicators_analysis/output/`）：300 dpi PNG（4000×2250）和 PDF，
-  每张图旁边都有它所画数据的 CSV。
+  运行脚本时还会把每条查询的结果存成 CSV，放在图旁边（只在本地）。
 - 一个单文件网页（`site/dist/scholarscope.html`，约 6 MB），包含 35 张图的可交互版本。
   双击就能离线打开，不需要服务器，也不需要联网。
   **只想看结果？** 直接从 [Release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22) 下载生成好的 `scholarscope.html`。
@@ -54,8 +54,8 @@ uv run scholarscope worldbank
 uv run scholarscope quality
 ```
 
-采到的是 OpenAlex 当天的数据。OpenAlex 一直在新增和更新记录，所以你得到的数字会和本仓库的图、CSV
-（采集于 2026-09-22）略有出入；仓库里提交的 `output/*.csv` 就是这些图背后的精确查询结果。
+采到的是 OpenAlex 当天的数据。OpenAlex 一直在新增和更新记录，所以你得到的数字会和本仓库的图
+（采集于 2026-09-22）略有出入。
 各命令的参数、退出码和费用见 [`docs/development.md`](docs/development.md)。
 
 然后补一次台湾（World Bank 没有台湾的数据，重复执行无害）：
@@ -72,7 +72,7 @@ uv run python analysis/run_all.py --strict
 
 依次运行五个分析脚本：每个脚本用只读连接执行自己 `sql/` 下的查询，结果存成 `output/*.csv`，
 再画成 `output/*.png` 和 `*.pdf`。`--strict` 表示连不上数据库就报错，不会悄悄改用 CSV；
-加 `--from-csv` 则不连数据库，直接用仓库里的 CSV 重画。
+连库跑过一次之后，加 `--from-csv` 可以不连数据库、用本地生成的 CSV 重画（只用于调样式）。
 
 ### 第 3 步 · 网页
 
@@ -113,7 +113,7 @@ docs/                    数据字典、开发说明、完整流程
 tests/                   单元测试与集成测试
 ```
 
-每个分析目录结构相同：`sql/`（一张图一条查询）、`output/`（查询结果 CSV 和图）、
+每个分析目录结构相同：`sql/`（一张图一条查询）、`output/`（图；本地运行后还有查询结果 CSV）、
 `make_figures.py`（一张图一个函数）、`README.md`（逐图说明：画的是什么、每列的含义、口径与数据坑）。
 图表样式规范见 [`analysis/图表统一规范.md`](analysis/图表统一规范.md)，
 字段含义见 [`docs/数据字典.md`](docs/数据字典.md)。

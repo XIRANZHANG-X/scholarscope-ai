@@ -30,3 +30,7 @@ site/dist/
 
 # Presentation decks are kept out of the repository
 *.pptx
+
+# Query results: written locally by every database run, not committed (the database is the source)
+analysis/*/output/*.csv
+country_indicators_analysis/output/*.csv
