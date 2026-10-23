@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScholarScope · RAG research, 2019–2026</title>
+<meta name="description" content="How retrieval-augmented generation research grew, where it is published, who writes it, what it is about, and how it tracks country wealth. Built from SQL queries on the ScholarScope database.">
+<style>
+/* Hallmark · genre: editorial · macrostructure: Stat-Led · theme: custom (RAG-blue anchor, offline OS fonts)
+ * tone: technical-editorial · anchor hue: 256 · enrichment: none (charts are the imagery)
+ * nav: N6 Newspaper masthead · footer: Ft4 Dense colophon
+ * Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4
+ */
+{{ tokens | safe }}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { overflow-x: clip; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  overflow-x: clip; margin: 0; background: var(--color-paper); color: var(--color-ink);
+  font-family: var(--font-body); font-size: var(--text-base); line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+a { color: var(--color-accent-2); text-underline-offset: 0.18em; text-decoration-thickness: var(--rule-hair); }
+a:hover { text-decoration-thickness: var(--rule-bold); }
+:focus-visible { outline: var(--rule-bold) solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-sm); }
+h1, h2, h3 { font-family: var(--font-display); font-style: normal; font-weight: 700; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+p { margin: 0; }
+.wrap { max-width: var(--page-max); margin: 0 auto; padding: 0 var(--page-gutter); }
+.muted { color: var(--color-muted); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: var(--space-xs); background: var(--color-paper); padding: var(--space-xs) var(--space-sm); }
+.skip:focus { left: var(--space-xs); }
+
+/* ---- N6 masthead ---- */
+.mast { padding-top: var(--space-lg); text-align: center; }
+.mast-line { font-size: var(--text-sm); letter-spacing: 0.08em; font-variant-caps: all-small-caps; color: var(--color-muted); }
+.mast-name { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -0.01em; line-height: 1; margin: var(--space-2xs) 0 var(--space-sm); }
+.mast-nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2xs) var(--space-lg); }
+.mast-nav a { color: var(--color-ink); text-decoration: none; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; padding: var(--space-2xs) 0; display: inline-block; }
+.mast-nav a:hover { color: var(--color-accent-2); text-decoration: underline; }
+.rule-double { border: 0; border-top: var(--rule-hair) solid var(--color-ink); border-bottom: var(--rule-hair) solid var(--color-ink); height: 4px; margin: var(--space-sm) 0 0; }
+
+/* ---- H4 stat-led hero ---- */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--space-lg) var(--space-2xl); align-items: end; padding: var(--space-2xl) 0 var(--space-xl); }
+.figure { font-family: var(--font-figure); font-weight: 600; font-size: var(--text-figure); line-height: 0.85; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--color-ink); }
+.figure .tick { color: var(--color-accent); }
+.hero h1 { font-size: var(--text-display-s); line-height: 1.08; letter-spacing: -0.015em; }
+.hero .qualifier { margin-top: var(--space-md); max-width: 46ch; font-size: var(--text-md); line-height: 1.5; color: var(--color-muted); }
+.chip { display: inline-block; margin-top: var(--space-lg); border: var(--rule-hair) solid var(--color-ink); border-radius: 999px; padding: var(--space-xs) var(--space-md); color: var(--color-ink); text-decoration: none; font-weight: 600; white-space: nowrap; transition: transform var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out); }
+.chip:hover { background: var(--color-paper-2); transform: translateY(-1px); text-decoration: none; }
+.chip:active { transform: translateY(0); }
+
+/* ---- T4 numbered stat strip ---- */
+.strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: var(--rule-hair) solid var(--color-rule); border-bottom: var(--rule-hair) solid var(--color-rule); margin: 0; padding: 0; list-style: none; }
+.strip li { padding: var(--space-md) var(--space-lg) var(--space-md) 0; }
+.strip li + li { border-left: var(--rule-hair) solid var(--color-rule); padding-left: var(--space-lg); }
+.strip b { display: block; font-family: var(--font-figure); font-weight: 600; font-size: var(--text-xl); line-height: 1.1; }
+.strip span { font-size: var(--text-sm); color: var(--color-muted); }
+
+/* ---- findings ---- */
+.finding { padding: var(--space-3xl) 0 var(--space-xl); border-bottom: var(--rule-hair) solid var(--color-rule); scroll-margin-top: var(--space-md); }
+.finding-head { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: var(--space-lg) var(--space-2xl); align-items: start; }
+.finding h2 { font-size: var(--text-display-s); line-height: 1.08; letter-spacing: -0.015em; max-width: 20ch; }
+.finding .lead { margin-top: var(--space-md); max-width: 65ch; font-size: 1.0625rem; }
+.finding .strip { grid-template-columns: minmax(0, 1fr); border-bottom: 0; }
+.finding .strip li, .finding .strip li + li { border-left: 0; padding: var(--space-sm) 0; border-bottom: var(--rule-hair) solid var(--color-rule); }
+.charts { display: grid; gap: var(--space-2xl); margin-top: var(--space-2xl); }
+figure.chart { margin: 0; min-width: 0; }
+figure.chart h3 { font-family: var(--font-body); font-size: var(--text-md); font-weight: 700; letter-spacing: -0.005em; }
+.plot { width: 100%; min-height: 300px; margin-top: var(--space-sm); }
+figure.chart figcaption { margin-top: var(--space-xs); font-size: var(--text-sm); color: var(--color-muted); max-width: 80ch; }
+figure.chart figcaption code { font-size: 0.95em; }
+details.more { margin-top: var(--space-2xl); border-top: var(--rule-bold) solid var(--color-ink); }
+details.more summary { cursor: pointer; padding: var(--space-md) 0; font-weight: 700; list-style: none; display: flex; gap: var(--space-xs); align-items: baseline; }
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "+"; font-family: var(--font-figure); color: var(--color-accent); width: 1ch; }
+details.more[open] summary::before { content: "−"; }
+details.more summary:hover { color: var(--color-accent-2); }
+.read-with-care { margin-top: var(--space-xl); max-width: 80ch; }
+.read-with-care h3 { font-family: var(--font-body); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.06em; font-variant-caps: all-small-caps; color: var(--color-muted); }
+.read-with-care ul { margin: var(--space-xs) 0 0; padding-left: 1.1em; font-size: var(--text-sm); color: var(--color-muted); }
+.read-with-care li + li { margin-top: var(--space-2xs); }
+
+/* ---- Ft4 colophon ---- */
+.colophon { padding: var(--space-2xl) 0 var(--space-3xl); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-xl) var(--space-2xl); font-size: var(--text-sm); }
+.colophon h2 { font-size: var(--text-xl); margin-bottom: var(--space-sm); }
+.colophon p + p { margin-top: var(--space-sm); }
+.colophon ol { margin: 0; padding-left: 1.2em; }
+.colophon li + li { margin-top: var(--space-2xs); }
+.colophon .queries { columns: 2 16rem; column-gap: var(--space-xl); margin: var(--space-sm) 0 0; padding: 0; list-style: none; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.75rem; color: var(--color-muted); }
+.colophon .queries li { break-inside: avoid; overflow-wrap: anywhere; }
+.stamp { margin-top: var(--space-lg); padding-top: var(--space-sm); border-top: var(--rule-hair) solid var(--color-rule); color: var(--color-muted); }
+.warn { background: var(--color-mark); padding: 0 var(--space-2xs); }
+
+@media (max-width: 860px) {
+  .hero, .finding-head, .colophon { grid-template-columns: minmax(0, 1fr); }
+  .hero { padding-top: var(--space-xl); }
+  .finding { padding-top: var(--space-2xl); }
+}
+@media (max-width: 560px) {
+  .strip { grid-template-columns: minmax(0, 1fr); }
+  .strip li + li { border-left: 0; padding-left: 0; border-top: var(--rule-hair) solid var(--color-rule); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .chip { transition: none; }
+}
+</style>
+</head>
+<body class="no-js">
+<a class="skip" href="#main">Skip to the findings</a>
+
+<header class="mast wrap">
+  <p class="mast-line">NTU course project · data to {{ data_end }} · {{ n_charts }} interactive charts</p>
+  <p class="mast-name">ScholarScope</p>
+  <nav class="mast-nav" aria-label="Sections">
+    <ul>
+      {% for s in sections %}<li><a href="#{{ s.id }}">{{ s.nav }}</a></li>{% endfor %}
+      <li><a href="#method">Method</a></li>
+    </ul>
+  </nav>
+  <hr class="rule-double" aria-hidden="true">
+</header>
+
+<main id="main" class="wrap">
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="figure" aria-hidden="true"><span class="count" data-target="{{ hero.total }}">{{ "{:,}".format(hero.total) }}</span></p>
+    <div>
+      <h1 id="hero-title"><span class="visually-hidden">{{ "{:,}".format(hero.total) }} </span>RAG papers in computer science, {{ hero.first_year }} to 2026</h1>
+      <p class="qualifier">{{ hero.first_count }} in {{ hero.first_year }}. {{ "{:,}".format(hero.last_count) }} between January and {{ data_end }}. Five readings of one corpus, each drawn from SQL queries on the project database.</p>
+      <a class="chip" href="#{{ sections[0].id }}">Read the five findings ↓</a>
+    </div>
+  </section>
+  <ul class="strip" aria-label="Corpus at a glance">
+    {% for value, label in hero.strip %}<li><b>{{ value }}</b><span>{{ label }}</span></li>{% endfor %}
+  </ul>
+
+  {% for s in sections %}
+  <section class="finding" id="{{ s.id }}" aria-labelledby="{{ s.id }}-title">
+    <div class="finding-head">
+      <div>
+        <h2 id="{{ s.id }}-title">{{ s.title }}</h2>
+        <p class="lead">{{ s.lead }}</p>
+      </div>
+      <ul class="strip" aria-label="Key numbers">
+        {% for value, label in s.stats %}<li><b>{{ value }}</b><span>{{ label }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    <div class="charts">
+      {% for c in s.charts %}
+      <figure class="chart">
+        <h3>{{ c.title }}</h3>
+        <div class="plot" id="{{ c.id }}" role="img" aria-label="{{ c.title }} (interactive chart)"></div>
+        {% if c.note %}<figcaption>{{ c.note }}</figcaption>{% endif %}
+      </figure>
+      {% endfor %}
+    </div>
+    {% if s.more %}
+    <details class="more">
+      <summary>{{ s.more | length }} more chart{{ "s" if s.more | length > 1 }} for this finding</summary>
+      <div class="charts">
+        {% for c in s.more %}
+        <figure class="chart">
+          <h3>{{ c.title }}</h3>
+          <div class="plot" id="{{ c.id }}" role="img" aria-label="{{ c.title }} (interactive chart)"></div>
+          {% if c.note %}<figcaption>{{ c.note }}</figcaption>{% endif %}
+        </figure>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+    <aside class="read-with-care">
+      <h3>Read with care</h3>
+      <ul>{% for c in s.caveats %}<li>{{ c }}</li>{% endfor %}</ul>
+    </aside>
+  </section>
+  {% endfor %}
+</main>
+
+<footer class="wrap colophon" id="method">
+  <div>
+    <h2>Method</h2>
+    <p>The corpus is every OpenAlex work in computer science whose title or abstract contains “retrieval augmented generation”, published 1 January 2019 to {{ data_end }}. Institutions are completed with ROR; country indicators come from the World Bank.</p>
+    <p>Pipeline: the <code>scholarscope</code> command line pulls the three sources into PostgreSQL; each chart’s numbers come from a saved SQL query, run read-only; the same queries feed the slide figures, so this page and the slides show the same numbers.</p>
+    <p class="stamp">Built {{ built }}{% if from_csv %} · <span class="warn">layout preview from saved CSVs, not a database run</span>{% endif %} · a snapshot: re-run <code>site/build_site.py</code> after the data changes.</p>
+  </div>
+  <div>
+    <h2>Data gaps</h2>
+    <ol>
+      <li>15.2% of papers carry a placeholder date (1 January): OpenAlex knows only the year. Quarterly counts leave them out.</li>
+      <li>41.4% of papers have no author country, mostly preprints without affiliation text; country results describe the rest.</li>
+      <li>90.9% of references point outside the corpus, so citation counts here are OpenAlex totals, not citations within RAG.</li>
+      <li>2026* runs to {{ data_end }} and conference papers of the year are still being indexed.</li>
+    </ol>
+    <h2 style="margin-top: var(--space-lg)">Queries behind this page</h2>
+    <ul class="queries">{% for q in queries %}<li>{{ q }}</li>{% endfor %}</ul>
+  </div>
+</footer>
+
+<script>{{ plotly_js | safe }}</script>
+<script>
+const FIGURES = {
+{% for s in sections %}{% for c in s.charts + s.more %}  "{{ c.id }}": {{ c.json | safe }},
+{% endfor %}{% endfor %}};
+(function () {
+  document.body.classList.remove("no-js");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const config = { displaylogo: false, responsive: true,
+                   modeBarButtonsToRemove: ["select2d", "lasso2d", "autoScale2d", "toggleSpikelines"],
+                   toImageButtonOptions: { format: "png", scale: 2 } };
+  const drawn = new Set();
+  function draw(el) {
+    if (drawn.has(el.id) || !FIGURES[el.id]) return;
+    drawn.add(el.id);
+    const fig = FIGURES[el.id];
+    const layout = Object.assign({}, fig.layout);
+    if (window.innerWidth < 640) {
+      // Phone: smaller type, a narrower right margin for end labels, no rotated ticks.
+      if (layout.margin && layout.margin.r > 60) layout.margin = Object.assign({}, layout.margin, { r: Math.min(layout.margin.r, 104) });
+      layout.annotations = (layout.annotations || []).map(a => Object.assign({}, a, { font: Object.assign({}, a.font, { size: 10 }) }));
+      ["xaxis", "yaxis"].forEach(k => {
+        if (!layout[k]) return;
+        layout[k] = Object.assign({}, layout[k], {
+          tickfont: Object.assign({}, layout[k].tickfont, { size: 10 }),
+          title: Object.assign({}, layout[k].title, { font: Object.assign({}, (layout[k].title || {}).font, { size: 11 }) }),
+        });
+        const t = layout[k].title;
+        if (t && t.text && t.text.length > 34) layout[k].title = Object.assign({}, t, { text: t.text.replace(" (", "<br>(") });
+        if (k === "xaxis" && layout[k].type !== "log" && layout[k].tickangle === undefined) layout[k].tickangle = 0;
+      });
+      layout.legend = Object.assign({}, layout.legend, { font: { size: 11 } });
+      layout.font = Object.assign({}, layout.font, { size: 11 });
+    }
+    Plotly.newPlot(el, fig.data, layout, config);
+  }
+  const plotObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { draw(e.target); plotObserver.unobserve(e.target); } });
+  }, { rootMargin: "400px 0px" });
+  const visible = [...document.querySelectorAll("main .plot")].filter(el => !el.closest("details"));
+  visible.forEach(el => plotObserver.observe(el));
+  // Backstop: after first paint, draw the rest one by one, so no chart waits on scrolling.
+  window.addEventListener("load", () => {
+    let i = 0;
+    (function next() {
+      while (i < visible.length && drawn.has(visible[i].id)) i++;
+      if (i < visible.length) { draw(visible[i++]); setTimeout(next, 40); }
+    })();
+  });
+  document.querySelectorAll("details.more").forEach(d => d.addEventListener("toggle", () => {
+    if (d.open) d.querySelectorAll(".plot").forEach(draw);
+  }));
+  // Hero figure: counts up once, ~500 ms (skipped when reduced motion is requested).
+  const count = document.querySelector(".count");
+  if (count && !reduce) {
+    const target = +count.dataset.target, start = performance.now(), dur = 520;
+    const fmt = n => n.toLocaleString("en-US");
+    (function step(now) {
+      const t = Math.min(1, (now - start) / dur), eased = 1 - Math.pow(1 - t, 4);
+      count.textContent = fmt(Math.round(target * eased));
+      if (t < 1) requestAnimationFrame(step);
+    })(start);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+/* Hallmark tokens · ScholarScope report
+ * theme: custom (anchor = the charts' RAG blue; fonts limited to what ships with the reader's OS,
+ *        because the page must open offline)
+ * axes: paper-band light · display-style roman-serif · accent-hue cool (255°)
+ */
+:root {
+  /* colour — tinted toward hue 250 so the greys sit with the blue accent */
+  --color-paper:    oklch(98.4% 0.004 250);
+  --color-paper-2:  oklch(95.6% 0.007 250);
+  --color-rule:     oklch(86% 0.008 250);
+  --color-neutral:  oklch(55% 0.012 250);
+  --color-muted:    oklch(40% 0.014 250);
+  --color-ink:      oklch(19% 0.014 255);
+  --color-accent:   oklch(57% 0.165 256);   /* = the RAG / preprint blue in every chart */
+  --color-accent-2: oklch(48% 0.15 256);
+  --color-focus:    oklch(57% 0.165 256);
+  --color-mark:     oklch(93% 0.045 256);
+
+  /* type — display: a roman serif; body: the OS sans; outlier: a condensed DIN for figures */
+  --font-display: "Sitka Heading", "Iowan Old Style", "Charter", "Palatino Linotype", "Book Antiqua", serif;
+  --font-body:    "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --font-figure:  "Bahnschrift", "DIN Alternate", "DIN Condensed", "Arial Narrow", sans-serif;
+
+  /* scale — major third from 1rem */
+  --text-sm:   0.8rem;
+  --text-base: 1rem;
+  --text-md:   1.25rem;
+  --text-lg:   1.5625rem;
+  --text-xl:   1.9531rem;
+  --text-display-s: clamp(2rem, 3.2vw + 1rem, 3.25rem);
+  --text-figure: clamp(4.5rem, 14vw, 10.5rem);
+
+  /* space — 4 pt base */
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --page-max: 76rem;
+
+  /* rules, radius */
+  --rule-hair: 1px;
+  --rule-bold: 2px;
+  --radius-sm: 3px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+}
