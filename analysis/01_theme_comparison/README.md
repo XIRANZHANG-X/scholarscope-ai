@@ -26,7 +26,7 @@ uv run python analysis/01_theme_comparison/make_figures.py --from-csv # 不连�
 ## 先看这三个数据坑
 
 1. **RAG 在旧文件里被算了两遍。** RAG 短语被探查了两次，直接 `sum` 会翻倍。
-   Release 里的 `theme_year_counts.csv` 和 `data-overview.html` 的第一张图都带着这个错
+   早期导出的 `theme_year_counts.csv` 和数据总览页（都已不再发布）带着这个错
    （2026 年写成 16,554，实际 8,277）。本目录的 SQL 只取每个短语最近一次探查，数字是对的。
 2. **LLM、Agents、Foundation models 是上限。** 一个主题由几个短语相加，同时命中两个短语的论文会被算两次，
    而且无法去重（没有论文明细）。RAG 只有一个短语，是精确值。想要精确数就用图 3 / CSV 里的单个短语。

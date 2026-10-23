@@ -41,18 +41,10 @@ docker compose up -d --wait        # PostgreSQL 17，地址 127.0.0.1:5432
 
 连接地址请写 `127.0.0.1`，不要写 `localhost`：Windows 上 `localhost` 会先解析成 `::1`，连接会卡住。
 
-### 第 1 步 · 准备数据（二选一）
+### 第 1 步 · 采集数据（约 20 分钟）
 
-**A. 恢复已发布的快照（精确复现，约 1 分钟）。** 从
-[`data-2026-09-22` Release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22)
-下载 `scholarscope.dump`（12 MB），然后：
-
-```bash
-docker compose exec -T postgres pg_restore -U scholarscope -d scholarscope --clean --if-exists --no-owner < scholarscope.dump
-```
-
-**B. 自己从 API 采集（约 20 分钟）。** 在 `.env` 里填一个免费的 OpenAlex API key
-（<https://openalex.org/settings/api>）。全量采集约花 0.16 美元，在每天 1 美元的免费额度内。
+在 `.env` 里填一个免费的 OpenAlex API key（<https://openalex.org/settings/api>）。
+全量采集约花 0.16 美元，在每天 1 美元的免费额度内。
 
 ```bash
 uv run scholarscope migrate
@@ -62,10 +54,11 @@ uv run scholarscope worldbank
 uv run scholarscope quality
 ```
 
-OpenAlex 一直在更新，所以路线 B 拿到的是当天的数据，和本仓库里的图会略有出入；要精确复现请用路线 A。
+采到的是 OpenAlex 当天的数据。OpenAlex 一直在新增和更新记录，所以你得到的数字会和本仓库的图、CSV
+（采集于 2026-09-22）略有出入；仓库里提交的 `output/*.csv` 就是这些图背后的精确查询结果。
 各命令的参数、退出码和费用见 [`docs/development.md`](docs/development.md)。
 
-两条路线都要再补一次台湾（World Bank 没有台湾的数据，重复执行无害）：
+然后补一次台湾（World Bank 没有台湾的数据，重复执行无害）：
 
 ```bash
 docker compose exec -T postgres psql -U scholarscope -d scholarscope < country_indicators_analysis/sql/00_add_taiwan.sql

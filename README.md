@@ -45,19 +45,10 @@ docker compose up -d --wait        # PostgreSQL 17 on 127.0.0.1:5432
 Use `127.0.0.1`, not `localhost`: on Windows `localhost` resolves to `::1` first and the
 connection stalls.
 
-### Step 1 · Get the data (choose one)
+### Step 1 · Collect the data (about 20 minutes)
 
-**A. Restore the published snapshot (exact reproduction, about one minute).** Download
-`scholarscope.dump` (12 MB) from the
-[`data-2026-09-22` release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22), then:
-
-```bash
-docker compose exec -T postgres pg_restore -U scholarscope -d scholarscope --clean --if-exists --no-owner < scholarscope.dump
-```
-
-**B. Collect it yourself from the APIs (about 20 minutes).** Put a free OpenAlex API key
-(<https://openalex.org/settings/api>) in `.env`. The full ingest costs about US$0.16 of the
-$1/day free budget.
+Put a free OpenAlex API key (<https://openalex.org/settings/api>) in `.env`. The full ingest costs
+about US$0.16 of the $1/day free budget.
 
 ```bash
 uv run scholarscope migrate
@@ -67,11 +58,12 @@ uv run scholarscope worldbank
 uv run scholarscope quality
 ```
 
-OpenAlex keeps updating, so route B gives today's numbers, which will differ slightly from the
-figures in this repository. Use route A to reproduce them exactly. Command details, exit codes
-and costs: [`docs/development.md`](docs/development.md).
+This pulls the corpus as it stands on OpenAlex today. OpenAlex keeps adding and updating
+records, so your counts will differ slightly from the figures and CSVs committed here (collected
+on 22 Sep 2026). The committed `output/*.csv` files are the exact query results behind those
+figures. Command details, exit codes and costs: [`docs/development.md`](docs/development.md).
 
-Either way, add Taiwan once (it is not in the World Bank data; re-running is harmless):
+Then add Taiwan once (it is not in the World Bank data; re-running is harmless):
 
 ```bash
 docker compose exec -T postgres psql -U scholarscope -d scholarscope < country_indicators_analysis/sql/00_add_taiwan.sql

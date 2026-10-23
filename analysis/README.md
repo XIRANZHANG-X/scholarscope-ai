@@ -83,4 +83,4 @@ uv run python site/build_site.py
 3. **会议论文进 OpenAlex 有几个月的滞后**，最近两个季度的会议论文数是偏低的。
 4. **15.2% 的论文日期只精确到年**，被记成 1 月 1 日。按月或按季度画图前要剔除。
 5. **LLM、Agents、Foundation models 只有计数没有论文**，而且是几个检索短语相加，是上限。
-6. **Release 里的 `theme_year_counts.csv` 把 RAG 算了两遍。** 方向一用自己的 SQL，不受影响。
+6. **早期导出的 `theme_year_counts.csv` 把 RAG 算了两遍**（已不再发布）。方向一用自己的 SQL，不受影响。
