@@ -18,3 +18,15 @@ data/
 
 # Brainstorming companion scratch files
 .superpowers/
+
+# The built website (site/build_site.py): a snapshot rebuilt from the database; share it via a release
+site/dist/
+
+# Hallmark design-skill run log
+.hallmark/
+
+# Local Claude Code settings
+.claude/
+
+# Presentation decks are kept out of the repository
+*.pptx

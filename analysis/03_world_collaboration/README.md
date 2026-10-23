@@ -3,8 +3,10 @@
 RAG 研究在哪些国家做、各国份额怎么变、谁和谁合作，以及这些国别数字到底建立在多少论文之上。
 
 ```bash
-uv run python analysis/03_world_collaboration/make_figures.py
+uv run python analysis/03_world_collaboration/make_figures.py [--strict | --from-csv]
 ```
+
+本目录 8 张图：fig1 地图；fig2a 前 15 名国家（论文数）；fig2b 国际合作比例；fig3 份额逐年；fig4 合作矩阵；fig5 合作连线；fig6a、fig6b 国家信息覆盖率（按类型 / 按年份）。
 
 数据来自 `bridge.work_countries`（每篇论文的作者所在国家）和 `external.country_profiles`（World Bank 的国家档案）。
 
@@ -44,9 +46,13 @@ uv run python analysis/03_world_collaboration/make_figures.py
 
 想改：按地区或收入分组汇总，直接对 CSV 的 `region` / `income_level` 求和即可。
 
-## 图 2　前 15 名国家，以及国际合作的比例
+## 图 2　前 15 名国家（fig2a），以及国际合作的比例（fig2b）
 
-![](output/fig2_top_countries_collab.png)
+![](output/fig2a_top_countries.png)
+![](output/fig2b_international_share.png)
+
+fig2a 按论文数排序，蓝色是作者全在本国、橙色是跨国合作。fig2b 按合作比例从高到低排，百分比保留一位小数，
+每个国家一种颜色（Nature 色板，见 `common.py` 的 `NATURE`，颜色只用来区分柱子，没有含义），最高、最低用黑框标出。
 
 | | |
 |---|---|
@@ -57,7 +63,7 @@ uv run python analysis/03_world_collaboration/make_figures.py
 图上能读出的：
 
 - 全语料有国家信息的论文里，23%（2,176 篇）涉及一个以上的国家。
-- 国际合作比例最高的是香港和新加坡（都是 84%），其次加拿大 65%、澳大利亚 64%、英国 61%。
+- 国际合作比例最高的是新加坡 84.2% 和香港 83.7%（基本并列），其次加拿大 65%、澳大利亚 64%、英国 61%。
 - 比例最低的是印度尼西亚 15% 和印度 17%。中国 34%，美国 39%。
 
 想看前 20 名，改 SQL 最后的 `LIMIT 15`。
@@ -72,7 +78,7 @@ uv run python analysis/03_world_collaboration/make_figures.py
 | CSV | [`output/fig3_country_share_by_year.csv`](output/fig3_country_share_by_year.csv) |
 | 列 | `overall_rank` 该国的总排名；`papers` 该国该年论文数；`papers_with_country` 该年有国家信息的论文数（分母）；`share_pct` |
 
-图上能读出的：
+图上没有图例，国家名标在每条线的末端。图上能读出的：
 
 - 中国：2024 年 22%，2025 年 28%，2026 年至今 27%。美国：29%、24%、24%。中国在 2025 年超过美国。
 - 印度从 2024 年的 8% 升到 2026 年的 13%。
@@ -107,14 +113,17 @@ CSV 里 2023 年没有德国的行，因为那年是 0 篇。
 | CSV | [`output/fig5_collab_pairs.csv`](output/fig5_collab_pairs.csv)（合作最多的 30 对国家） |
 | 列 | `rank`；两国的代码和名称；`joint_papers`；两国首都的经纬度 |
 
-线越粗合作论文越多；圆点大小是该国在这 30 条连线上的合计。连线画在首都之间，是示意用的曲线，不是真实路径。
+线越粗合作论文越多；**合作最多的 5 对用深蓝粗线**，其余 25 对用浅蓝。连线画在首都之间，是示意用的曲线，不是真实路径。
 
 国名标签的位置是在脚本的 `place` 字典里手工调的（欧洲和东亚的首都挤在一起）。
 如果改了 SQL 的 `LIMIT 30` 导致出现新的国家，新国家会用默认位置，可能需要在 `place` 里补一行。
 
-## 图 6　偏差检查：多少论文有国家信息
+## 图 6　偏差检查：多少论文有国家信息（fig6a 按类型，fig6b 按年份）
 
-![](output/fig6_country_coverage.png)
+![](output/fig6a_coverage_by_type.png)
+![](output/fig6b_coverage_by_year.png)
+
+fig6b 里 2026* 的柱子画成斜线填充，表示数据只到 9 月 22 日、新论文的单位信息还在补全。
 
 | | |
 |---|---|
@@ -127,6 +136,6 @@ CSV 里 2023 年没有德国的行，因为那年是 0 篇。
 - 预印本只有 28% 有国家信息，会议论文 92%，Article 72%。
 - 按年份：2024 年 46%，2025 年 64%，2026 年至今 59%。
 
-这意味着前面五张图主要反映的是会议论文和期刊文章，占语料 44% 的预印本大部分没有被算进去。
+这意味着前面几张图主要反映的是会议论文和期刊文章，占语料 44% 的预印本大部分没有被算进去。
 缺失的原因在 6a 的最后两列：没有国家的论文，基本就是作者位上连单位原文都没有的论文，无法补救。
 哪些国家因此被低估，这份数据回答不了。

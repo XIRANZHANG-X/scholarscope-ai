@@ -3,8 +3,11 @@
 RAG 论文以什么形式发表、这个构成怎么变、不同类型的论文被引情况如何、都发在哪里。
 
 ```bash
-uv run python analysis/02_publication_types/make_figures.py
+uv run python analysis/02_publication_types/make_figures.py [--strict | --from-csv]
 ```
+
+本目录 8 张图：fig1 按季度；fig2、fig2b 类型构成（逐年 / 各主题）；fig3_cited_share、fig3_mean_citations
+被引情况；fig4_sources_preprint / _conference_paper / _article 各类型的载体排行。
 
 类型用的是 OpenAlex 的 `type` 字段，语料只包含四类：
 
@@ -44,29 +47,34 @@ uv run python analysis/02_publication_types/make_figures.py
 - 2026 Q3 只到 9 月 22 日，且会议论文还没收录完，不能当作下降。
 - 被剔除的论文：2024 年 262 篇、2025 年 884 篇、2026 年 1,246 篇。
 
-想改：带星号的季度在脚本的 `lagging` 里；起始时间在 SQL 的 `DATE '2024-01-01'`。
+最后两个季度用浅灰底标为 Incomplete*。起始时间在 SQL 的 `DATE '2024-01-01'`。
 
-## 图 2　类型构成：RAG 逐年，以及与其他主题对比
+## 图 2　类型构成：RAG 逐年（fig2），以及与其他主题对比（fig2b）
 
-![](output/fig2_type_share.png)
+![](output/fig2_type_share_by_year.png)
+![](output/fig2b_type_mix_by_theme.png)
 
 | | |
 |---|---|
-| SQL | [`sql/fig2a_type_share_by_year.sql`](sql/fig2a_type_share_by_year.sql)（左）、[`sql/fig2b_type_mix_by_theme.sql`](sql/fig2b_type_mix_by_theme.sql)（右） |
+| SQL | [`sql/fig2a_type_share_by_year.sql`](sql/fig2a_type_share_by_year.sql)（fig2）、[`sql/fig2b_type_mix_by_theme.sql`](sql/fig2b_type_mix_by_theme.sql)（fig2b） |
 | CSV | [`output/fig2a_type_share_by_year.csv`](output/fig2a_type_share_by_year.csv)、[`output/fig2b_type_mix_by_theme.csv`](output/fig2b_type_mix_by_theme.csv) |
 | 列 | `works` 篇数；`works_in_year` / `works_in_theme` 分母；`share_pct` 占比 |
 
 图上能读出的：
 
-- 左：预印本占比 2024 年 52%，2025 年 34%，2026 年 48%。会议论文 2025 年 42%，2026 年 19%（受收录滞后影响）。
-- 右：四个主题里 RAG 的预印本占比最低（44%），会议论文占比最高（29%）；Agents 的预印本占 58%。
+- fig2：预印本占比 2024 年 52%，2025 年 34%，2026 年 48%。会议论文 2025 年 42%，2026 年 19%（受收录滞后影响）。
+- fig2b：四个主题里 RAG 的预印本占比最低（44%），会议论文占比最高（29%）；Agents 的预印本占 58%。
 
-右图的数据来自 `meta.recall_probes`，其他主题只有计数；LLM、Agents、Foundation models 的 n 是几个短语之和，是上限。
+fig2b 的数据来自 `meta.recall_probes`，其他主题只有计数；LLM、Agents、Foundation models 的 n 是几个短语之和，是上限。
 2023 年只有 133 篇，占比波动大。
 
-## 图 3　同一年发表的论文，各类型的被引情况
+## 图 3　各类型的被引情况（2024 与 2025 两批论文并排）
 
-![](output/fig3_citations_by_type.png)
+![](output/fig3_cited_share.png)
+![](output/fig3_mean_citations.png)
+
+两张图都是分组柱：每种类型两根柱，**深色是 2024 年发表的，浅色是 2025 年发表的**；
+横轴类型名下的 `n = 1,022 / 1,873` 是两年的篇数。
 
 | | |
 |---|---|
@@ -82,9 +90,13 @@ uv run python analysis/02_publication_types/make_figures.py
 
 Review 只有 5 篇和 22 篇，留在 CSV 里但没有画。这是相关性，不能读成「发在会议上所以被引多」。
 
-## 图 4　各类型最常见的发表载体
+## 图 4　各类型最常见的发表载体（每种类型一张）
 
-![](output/fig4_top_sources_by_type.png)
+![](output/fig4_sources_preprint.png)
+![](output/fig4_sources_conference_paper.png)
+![](output/fig4_sources_article.png)
+
+每张是该类型的前 5 个载体，加一根灰色的 No venue recorded（没有载体记录的篇数）。
 
 | | |
 |---|---|
@@ -95,8 +107,8 @@ Review 只有 5 篇和 22 篇，留在 CSV 里但没有画。这是相关性，�
 图上能读出的：
 
 - 预印本：arXiv 5,380 篇，占预印本的 77%。
-- 会议论文：**74%（3,439 篇）在 OpenAlex 里没有载体记录**，所以这个前十只代表其余 26%。
+- 会议论文：**74%（3,439 篇）在 OpenAlex 里没有载体记录**，所以前 5 名只代表其余 26%：这张图主要说明数据缺口，不代表会议格局。
 - Article：排第一的是 Zenodo（768 篇），其次是 IEEE Access（89）、Applied Sciences（72）。
 
 图上的载体名是缩短过的（去掉了括号里的机构名，过长的截断），CSV 里是 OpenAlex 的原名。
-想看前 20 名，把 SQL 最后的 `rank_in_type <= 10` 改掉。
+CSV 里每类有前 10 名，图上画前 5 名（脚本里的 `head(5)`）。

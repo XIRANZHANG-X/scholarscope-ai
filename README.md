@@ -1,222 +1,162 @@
-# ScholarScope AI
+# ScholarScope · RAG research, 2019–2026
 
-NTU 课程项目。我们手上有一份关于 **RAG（检索增强生成）** 这个研究方向的完整数据：
-它怎么从 2019 年的 2 篇论文长到 2026 年前九个月的 8,277 篇，谁在做、在哪做、和各国的科研投入有没有关系。
+**English** · [简体中文](README.zh-CN.md)
 
-**数据已经采集、清洗、标准化完毕，可以直接开始分析。**
-用什么工具、做哪些分析、讲什么故事——都还没定，欢迎在 issue 里讨论。
+A reproducible bibliometric study of **retrieval-augmented generation (RAG)** research. It
+collects every computer-science paper on OpenAlex whose title or abstract mentions
+"retrieval augmented generation" (15,921 papers, 1 Jan 2019 – 22 Sep 2026), enriches it with
+ROR institutions and World Bank country indicators, loads everything into PostgreSQL, and
+answers five questions with saved SQL queries:
 
-截止日期：**2026-10-23**。原始设计文档见 [`任务架构.md`](任务架构.md)（内容较多，不读也不影响动手）。
+| # | Question | Main finding |
+|---|---|---|
+| 1 | How fast did RAG grow, compared with LLM, AI agents and foundation models? | RAG went from 133 papers (2023) to 1,966 (2024), 14.8× in one year, the steepest single-year rise of the four themes. |
+| 2 | Where is it published, and how is each type cited? | About half of RAG papers are preprints (52% in 2024); preprints are cited least (55% of 2024 preprints cited at least once vs 88% of conference papers). |
+| 3 | Which countries write it, and who works with whom? | China (2,494) and the US (2,306) appear on half of the papers with a known country; China–US is the largest partnership (301 joint papers). |
+| 4 | What is it about, and what is gaining ground? | Agents rose from 11% to 24% of RAG papers (2024 → 2026); fine-tuning fell from 21% to 13%. |
+| 5 | Does country wealth or R&D spending predict output? | Papers per person scale about 1:1 with GDP per capita (negative binomial elasticity 1.07); R&D share of GDP adds nothing measurable once wealth is controlled. |
 
----
+Every number in the figures and on the website comes from a SQL query against the database;
+CSV files are only copies of query results.
 
-## 一、我们有什么数据
+**Outputs**
 
-三个公开数据源融合而成，全部是**全量**而非抽样：
-
-| | 数量 | 说明 |
-|---|---:|---|
-| **论文** | **15,921 篇** | 标题或摘要含 "retrieval augmented generation"，计算机领域，2019-01-01 至 2026-09-22 |
-| 作者 | 48,101 位 | 68,797 条「某篇论文的第 N 位作者」记录 |
-| 机构 | 5,684 家 | 已用 ROR 标准化，带国家、城市、**经纬度** |
-| 引用 | 104,227 条 | 其中 9,446 条是语料内部的引用 |
-| 主题标签 | 45,322 条 | OpenAlex 的主题分类，带置信分 |
-| 关键词 | 108,364 条 | 同上 |
-| 国家指标 | 217 国 × 6 指标 × 7 年 | World Bank：人口、GDP、人均 GDP、研发投入占比、每百万研究人员、高技术出口 |
-| 宏观背景 | 4 主题 × 8 年 | RAG / LLM / Agents / Foundation Models 的年度论文总数对比 |
-
-**想先看看这些数据长什么样？** 去
-[Releases](https://github.com/XIRANZHANG-X/scholarscope-ai/releases) 下载
-**`data-overview.html`**，双击打开就行——13 张用真实数据画的图（年度趋势、世界地图、机构排行、
-合作网络、思想源头、数据缺口……），每张下面都写了「可以做什么」。不用装任何东西，也不用懂 SQL。
-**不知道从哪下手的话，从这个开始。**
-
-**每个字段的具体含义见 [`docs/数据字典.md`](docs/数据字典.md)** —— 包含示例值、覆盖率，
-以及 8 个必须知道的数据坑（比如有 15.2% 的论文日期是假的）。
+- 35 figures for slides (`analysis/*/output/`, `country_indicators_analysis/output/`): PNG at
+  300 dpi (4000 × 2250) plus PDF, each with the CSV of exactly what it draws.
+- A single-file website (`site/dist/scholarscope.html`, ~6 MB) with interactive versions of all
+  35 charts. It opens offline with a double-click: no server, no internet connection.
 
 ---
 
-## 二、怎么拿到数据
+## Reproduce it
 
-> **先说一条课程硬性要求**：老师要求「数据库是分析访问数据的唯一渠道」「必须用 SQL 获取分析数据」
-> 「分析工具连接数据库」。
->
-> 所以界线是这样的——**CSV 可以用来快速看一眼数据长什么样，但凡是要进 PPT 的图、要交的分析，
-> 都必须是从数据库里查出来的。** 好在这不麻烦：恢复一份数据库只要一条命令，
-> 之后 Tableau、Python、R 都能实时连上去。
-
-### 路线 A：本地跑数据库 ← 做分析的都走这条
+**Requirements:** [Docker Desktop](https://www.docker.com/products/docker-desktop/),
+[uv](https://docs.astral.sh/uv/) (it installs Python 3.13 for you), about 2 GB of disk.
 
 ```bash
 git clone https://github.com/XIRANZHANG-X/scholarscope-ai.git
 cd scholarscope-ai
-cp .env.example .env            # 改掉里面的密码
-docker compose up -d --wait     # 起 PostgreSQL（需要先装 Docker Desktop）
+cp .env.example .env               # set POSTGRES_PASSWORD
+uv sync
+docker compose up -d --wait        # PostgreSQL 17 on 127.0.0.1:5432
 ```
 
-从 [**Releases**](https://github.com/XIRANZHANG-X/scholarscope-ai/releases) 下载
-`scholarscope.dump`（12 MB），恢复进去：
+Use `127.0.0.1`, not `localhost`: on Windows `localhost` resolves to `::1` first and the
+connection stalls.
+
+### Step 1 · Get the data (choose one)
+
+**A. Restore the published snapshot (exact reproduction, about one minute).** Download
+`scholarscope.dump` (12 MB) from the
+[`data-2026-09-22` release](https://github.com/XIRANZHANG-X/scholarscope-ai/releases/tag/data-2026-09-22), then:
 
 ```bash
 docker compose exec -T postgres pg_restore -U scholarscope -d scholarscope --clean --if-exists --no-owner < scholarscope.dump
 ```
 
-完事。现在你本地有一个和我这边一模一样的数据库了。
-
-**连接参数**（下面所有工具都用这组）：
-
-| 项 | 值 |
-|---|---|
-| 主机 | `127.0.0.1`（**不要写 localhost**，Windows 上会解析到 `::1` 然后卡住） |
-| 端口 | `5432` |
-| 数据库 | `scholarscope` |
-| 用户 | `scholarscope` |
-| 密码 | 你 `.env` 里设的那个 |
-
-### 各个工具怎么连
-
-**Tableau Desktop**（学生可[免费申请一年](https://www.tableau.com/academic/students)）
-连接 → 到服务器 → **PostgreSQL**，填上面那组参数。
-**连接方式一定要选 `Live`（实时），不要选 `Extract`**——Live 才是真的在查数据库。
-连上后可以直接拖表，也可以用「自定义 SQL」写查询，后者更符合课程要求。
-
-**Python**
-
-```python
-import pandas as pd
-from sqlalchemy import create_engine
-engine = create_engine("postgresql+psycopg://scholarscope:你的密码@127.0.0.1:5432/scholarscope")
-df = pd.read_sql("SELECT publication_year, count(*) AS works FROM core.works GROUP BY 1 ORDER BY 1", engine)
-```
-
-**R**
-
-```r
-con <- DBI::dbConnect(RPostgres::Postgres(), host = "127.0.0.1", port = 5432,
-                      dbname = "scholarscope", user = "scholarscope", password = "你的密码")
-df  <- DBI::dbGetQuery(con, "SELECT publication_year, count(*) AS works FROM core.works GROUP BY 1 ORDER BY 1")
-```
-
-**点着看表 / 练 SQL**：`docker compose --profile ui up -d`，然后开 <http://127.0.0.1:5050>。
-左边 **Servers → ScholarScope (local)** 已经配好。嫌目录树太深就用
-**Tools → Query Tool**（`Alt+Shift+Q`）直接写 SQL。
-
-**PyCharm Professional / DataGrip** 自带数据库工具，填上面那组参数即可。
-
-### 路线 B：CSV 压缩包 ← 只用来快速看一眼，别用它出最终结果
-
-从 Releases 下载 `scholarscope-csv.zip`（13 MB），解压是 19 个 CSV + 数据字典，UTF-8 带表头。
-不需要 Docker、不需要数据库，Excel 双击前记得用「数据 → 从文本/CSV」导入并选 UTF-8。
-
-**它的定位是「装环境之前先看看数据长什么样」，以及给暂时装不上 Docker 的同学兜底。**
-真要做分析了，还是回路线 A——否则交上去的图说不清是从哪来的。
-
-这些 CSV 本身是用 [`scripts/export_csv.py`](scripts/export_csv.py) 从数据库里用 SQL 导出来的，
-数据更新后重跑一遍即可。
-
-### 路线 C：自己从头采一遍（想了解 ETL 过程）
+**B. Collect it yourself from the APIs (about 20 minutes).** Put a free OpenAlex API key
+(<https://openalex.org/settings/api>) in `.env`. The full ingest costs about US$0.16 of the
+$1/day free budget.
 
 ```bash
-uv sync
 uv run scholarscope migrate
-uv run scholarscope probe                       # 探查规模
-uv run scholarscope ingest --profile standard   # 全部论文，约 $0.16、7 分钟
-uv run scholarscope ror                         # ROR 机构富化，免费、约 9 分钟
-uv run scholarscope worldbank                   # World Bank 指标，免费、约 3 秒
-uv run scholarscope quality                     # 质量检查
+uv run scholarscope ingest --profile standard
+uv run scholarscope ror
+uv run scholarscope worldbank
+uv run scholarscope quality
 ```
 
-OpenAlex 的免费 key 在 <https://openalex.org/settings/api> 领，每天 $1 额度。
-命令详情见 [`docs/development.md`](docs/development.md)。
+OpenAlex keeps updating, so route B gives today's numbers, which will differ slightly from the
+figures in this repository. Use route A to reproduce them exactly. Command details, exit codes
+and costs: [`docs/development.md`](docs/development.md).
 
----
+Either way, add Taiwan once (it is not in the World Bank data; re-running is harmless):
 
-## 三、关于做网页：Tableau 有个坑
-
-如果最终要交一个**能联网访问的网页**，这里有个必须提前知道的限制：
-
-| 问题 | 答案 |
-|---|---|
-| Tableau 能实时连 PostgreSQL 吗？ | **能**，选 Live 连接即可 |
-| Tableau 做的图能发到网上、并且保持实时吗？ | **不能。** Tableau Public（免费版）**只支持 Extract 快照，不支持 Live 连接**，而且上传的数据会**完全公开** |
-| 那要怎样才能实时？ | Tableau Server / Cloud，付费 |
-
-所以建议**分工使用**：
-
-- **Tableau** —— 用来探索数据、出 PPT 里的静态图。连本地数据库，Live 连接，截图进 PPT。
-- **Streamlit + Plotly** —— 用来做那个要联网的网页。它直接连 PostgreSQL、用 SQL 取数、
-  实时渲染，天然满足课程要求。依赖已经装好了。
-
-如果后面想让网页和 Tableau Cloud 都能连同一个库，可以把数据库搬到免费的云端 PostgreSQL
-（Neon、Supabase 之类，12 MB 的数据离免费额度差得远），这样全组共用一个数据源。
-这是个待讨论的选项，不是已经定的事。
-
----
-
-## 四、可以做什么——这部分开放讨论
-
-下面是我看数据时觉得能做的方向，**不是任务分配，只是起个头**。
-有想法的直接开 issue，或者在群里说。
-
-**关于这个领域本身**
-- RAG 是什么时候、以多快的速度从边缘变成主流的？和 LLM / Agents / Foundation Models 比呢？
-- 这个领域的「思想源头」是什么？（语料里 90.9% 的引用指向外部，统计被引最多的外部论文就能看出来）
-- 预印本比期刊论文领先多久？这个领域是不是真的「跑得特别快」？
-- 哪些主题/关键词组合是新冒出来的？有没有能回测的增长信号？
-
-**关于谁在做**
-- 国家和机构的排名，以及谁在追赶谁
-- 高校 vs 企业的比例，以及它们关注的主题有没有差别
-- 国际合作有多普遍？哪些国家之间合作最多？（有经纬度，可以画地图连线）
-- 作者层面：有没有一批人持续在做，还是大量一次性参与者？
-
-**关于和国家实力的关系**
-- 研发投入占 GDP 的比例，和论文产出有没有相关性？
-- 按人口归一化之后，排名会变成什么样？（大国优势会消失，小而强的国家会浮出来）
-- 收入分组、地区维度上有什么差别？
-
-**关于数据本身（这块其实是课程的加分项）**
-- 三个数据源融合之后，覆盖率提升了多少？哪些还是补不上？
-- 41.4% 的论文没有国家信息，这会不会让所有国别结论都有偏差？偏向谁？
-
-**技术方向**（想做深的话）
-- 把论文向量化，做语义检索和相似论文推荐（数据库已装 pgvector）
-- 给论文的 RAG 子方向做多标签分类（需要先定义类别 + 人工标注一批）
-- 论文影响力预测
-- 把引用网络导进 Neo4j 做图分析（compose 里已经配好 Neo4j，`--profile graph` 启动）
-
-**要讨论的问题**
-- 工具用什么？Tableau / Python+Plotly / R+ggplot 都行，也可以混用
-- 怎么分工？按分析主题分，还是按技术栈分？
-- PPT 正文限 20 页以内，哪些内容必须留、哪些砍掉？
-
----
-
-## 五、仓库里有什么
-
+```bash
+docker compose exec -T postgres psql -U scholarscope -d scholarscope < country_indicators_analysis/sql/00_add_taiwan.sql
 ```
-├── README.md              ← 本文件
-├── analysis/               ← 四个分析方向的图：每张图配 SQL、CSV 和说明  ★ 做 PPT 从这里拿图
-├── country_indicators_analysis/  ← 第五个方向：国家投入与论文产出
-├── docs/数据字典.md        ← 每个字段的含义、覆盖率、数据坑  ★ 动手前读这个
-├── docs/development.md     ← 命令、退出码、费用
-├── 任务架构.md             ← 原始设计文档（很长）
-├── scripts/export_csv.py   ← 把数据库导成 CSV
-├── src/scholarscope/       ← 采集与清洗代码（Python）
-├── sql/migrations/         ← 数据库表结构（3 个 migration）
-├── tests/                  ← 117 项自动化测试
-└── compose.yaml            ← PostgreSQL + pgAdmin + Neo4j
+
+### Step 2 · Queries → figures
+
+```bash
+uv run python analysis/run_all.py --strict
+```
+
+Runs the five analysis scripts. Each executes its `sql/*.sql` over a read-only connection, saves
+the result to `output/*.csv` and draws `output/*.png` / `*.pdf`. `--strict` fails instead of
+silently falling back to the CSVs when the database is unreachable. With `--from-csv` the
+scripts redraw from the committed CSVs without any database.
+
+### Step 3 · Website
+
+```bash
+uv run python site/build_site.py
+```
+
+Runs the same queries and writes `site/dist/scholarscope.html` with the data and plotly.js inlined.
+The page is a snapshot of the query results; rebuild it after the data changes.
+
+### Check
+
+```bash
+uv run pytest
 ```
 
 ---
 
-## 六、几条规矩
+## Repository layout
 
-- **`.env` 永远不要提交**，里面有数据库密码。模板是 `.env.example`。
-- **`data/` 不提交**，几十 MB，从 Releases 下载或用命令重新生成。
-- **改数据库结构要写 migration**，不要手工改表，做法见 `docs/development.md`。
-- **改了 `src/` 的代码，提交前跑一下 `uv run pytest`**，现在 117 项全过。
-- **最终产出必须能追溯到数据库。** 课程要求「必须用 SQL 获取分析数据」，所以进 PPT 的图、
-  交上去的分析，取数都要走数据库。CSV 只是用来先看看数据长什么样的。
-- 写出来的 SQL 请存成文件提交（别只留在 Tableau 的自定义 SQL 框或者 notebook 里），
-  PPT 有一页专门要展示代表性 SQL。
+```
+src/scholarscope/        data collection: OpenAlex ingest, ROR and World Bank enrichment, quality checks (CLI: `scholarscope`)
+sql/migrations/          database schema (Alembic): meta, core, bridge, external
+compose.yaml             PostgreSQL 17 (+ optional pgAdmin: `docker compose --profile ui up -d`)
+analysis/
+  common.py              shared figure style and read-only query helper
+  run_all.py             regenerate all five directions
+  01_theme_comparison/   RAG vs LLM, agents and foundation models
+  02_publication_types/  preprints, conference papers, articles; citations; venues
+  03_world_collaboration/ countries, international co-authorship, maps
+  04_subfields/          keyword-rule sub-directions of RAG (subfield_rules.csv)
+country_indicators_analysis/  country wealth, R&D and population vs output (negative binomial models)
+site/                    single-file website: build_site.py, charts.py, template, tokens
+scripts/export_csv.py    export the database as CSV
+docs/                    data dictionary, development notes, pipeline
+tests/                   unit and integration tests
+```
+
+Each analysis folder has the same shape: `sql/` (one query per figure), `output/` (the query
+results as CSV and the figures), `make_figures.py` (one function per figure) and a `README.md`
+explaining every figure, its columns and its caveats.
+
+**Language note:** the analysis READMEs, the figure style guide
+([`analysis/图表统一规范.md`](analysis/图表统一规范.md)), the data dictionary
+([`docs/数据字典.md`](docs/数据字典.md)) and the pipeline notes ([`docs/流程.md`](docs/流程.md))
+are in Chinese. The country-indicator report
+([`country_indicators_analysis/README.md`](country_indicators_analysis/README.md)) and
+[`docs/development.md`](docs/development.md) are in English. All figures and the website are in English.
+
+---
+
+## Data caveats
+
+Read these before reusing any number:
+
+1. **15.2% of papers have a placeholder date** (1 January): OpenAlex knows only the year. Quarterly counts leave them out.
+2. **41.4% of papers have no author country**, mostly preprints without affiliation text. Country results describe the rest.
+3. **A paper counts once for every country on it** (full counting), so country totals exceed the paper count.
+4. **2026 runs to 22 September**, and conference papers of the year are still being indexed. Figures mark it as 2026*.
+5. **The LLM, agents and foundation-model counts are search-hit counts** (several phrases added together, so upper bounds); only the RAG papers themselves are in the database.
+6. **Sub-directions are keyword rules**: a match means a topic is mentioned, not that it is the paper's subject. The title-only count is the stricter reading.
+7. **Publication type is OpenAlex's label** and is noisy (for example, Zenodo uploads tagged as articles).
+
+## Data sources and licences
+
+| Source | Used for | Licence |
+|---|---|---|
+| [OpenAlex](https://openalex.org) | papers, authors, institutions, citations | CC0 |
+| [ROR](https://ror.org) | institution names, countries, coordinates | CC0 |
+| [World Bank Open Data](https://data.worldbank.org) | GDP per capita, R&D share, population | CC BY 4.0 |
+| [Natural Earth](https://www.naturalearthdata.com) | map outlines | public domain |
+| Taiwan's indicators (DGBAS, Ministry of the Interior, NSTC) | added by hand, see `country_indicators_analysis/README.md` | government open data |
+
+The code is released under the [MIT licence](LICENSE). The data keep their original licences above.

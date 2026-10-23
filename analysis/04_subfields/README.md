@@ -3,8 +3,10 @@
 RAG 研究内部分成哪些方向、各有多大、哪些在升温、哪些经常一起出现。
 
 ```bash
-uv run python analysis/04_subfields/make_figures.py
+uv run python analysis/04_subfields/make_figures.py [--strict | --from-csv]
 ```
+
+本目录 4 张图：fig1_sizes_method、fig1_sizes_application（两组子方向的规模）、fig2_subfield_share_shift（占比变化）、fig3_subfield_cooccurrence（共现）。
 
 ---
 
@@ -28,13 +30,13 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 
 ### 怎么改规则
 
-直接编辑 `subfield_rules.csv`，然后重跑脚本，四张图和所有 CSV 都会跟着变。
+直接编辑 `subfield_rules.csv`，然后重跑脚本，所有图和 CSV 都会跟着变。
 
 | 列 | 含义 |
 |---|---|
 | `subfield` | 内部编号，不要重复 |
 | `label` | 图上显示的名字 |
-| `kind` | `method`（方法与关注点）或 `application`（应用领域），决定图 1 分在哪一组 |
+| `kind` | `method`（方法与关注点）或 `application`（应用领域），决定图 1 分在哪一张 |
 | `pattern` | PostgreSQL 正则表达式，不区分大小写 |
 
 正则里几个常用写法：`a|b` 是「a 或 b」；`-?` 表示连字符可有可无（`fine-?tun` 同时匹配 fine-tune 和 finetune）；
@@ -45,13 +47,16 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 
 ---
 
-## 图 1　各子方向的论文数
+## 图 1　各子方向的论文数（方法与关注点、应用领域各一张）
 
-![](output/fig1_subfield_sizes.png)
+![](output/fig1_sizes_method.png)
+![](output/fig1_sizes_application.png)
+
+浅蓝宽柱是「标题或摘要」口径，深蓝窄柱是「标题」口径；两张图横轴同为 0–5,000，可以直接比大小。
 
 | | |
 |---|---|
-| SQL | [`sql/fig1_subfield_sizes.sql`](sql/fig1_subfield_sizes.sql)、[`sql/fig1b_tagging_coverage.sql`](sql/fig1b_tagging_coverage.sql)（副标题里的总数） |
+| SQL | [`sql/fig1_subfield_sizes.sql`](sql/fig1_subfield_sizes.sql)、[`sql/fig1b_tagging_coverage.sql`](sql/fig1b_tagging_coverage.sql)（覆盖率总数，写在下面） |
 | CSV | [`output/fig1_subfield_sizes.csv`](output/fig1_subfield_sizes.csv)、[`output/fig1b_tagging_coverage.csv`](output/fig1b_tagging_coverage.csv) |
 | 列 | `papers` 标题或摘要匹配的篇数；`papers_title` 标题匹配的篇数；`papers_with_abstract` 分母；`share_pct`、`share_title_pct` 两个口径的占比 |
 
@@ -64,9 +69,9 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 
 规则覆盖：13,969 篇里 12,404 篇（89%）至少匹配一条规则；按标题算是 6,765 篇（48%）。
 
-## 图 2　各子方向的占比变化
+## 图 2　2024 到 2026 年，各子方向的占比怎么移动（哑铃图）
 
-![](output/fig2_subfield_share_by_year.png)
+![](output/fig2_subfield_share_shift.png)
 
 | | |
 |---|---|
@@ -74,13 +79,28 @@ OpenAlex 自带的主题和关键词用不了：四千多篇论文被归到 "Top
 | CSV | [`output/fig2_subfield_share_by_year.csv`](output/fig2_subfield_share_by_year.csv) |
 | 列 | `year`；`papers`、`papers_title` 两个口径的篇数；`papers_with_abstract` 该年有摘要的论文数（分母）；`share_pct`、`share_title_pct` |
 
-深色线是「标题或摘要」，浅色线是「标题」。所有小图共用同一个纵轴，可以直接比高低。图上能读出的：
+每个子方向一行：空心点是 2024 年占比，实心点是 2026 年至今，按「标题或摘要」口径；蓝色是上升、红色是下降，
+按变化从大到小排。右侧标的是 2026 年占比和变化（百分点）。它替代了原来每个子方向一张的 13 张折线图和那张变化条形图。
+图上能读出的：
 
-- Agents 两条线都在明显上升：按提到算 11% → 17% → 24%，按标题算 5% → 14%。
-- Fine-tuning 两条线都在下降：按提到算 21% → 13%。
+- Agents 升得最多：11% → 24%（+13 pp）。
+- Evaluation 也是 +13 pp，但只看标题时几乎不变（见下面的表）。
+- Fine-tuning 是唯一明显下降的：21% → 13%（−8 pp）。
 - Healthcare、Education 基本持平。
 
-CSV 里有 2023 年的行，但那年只有一百多篇，图上从 2024 年开始画。
+**只看标题的变化**没有画进图，数字在 [`output/fig4_subfield_share_change.csv`](output/fig4_subfield_share_change.csv)
+（SQL：[`sql/fig4_subfield_share_change.sql`](sql/fig4_subfield_share_change.sql)），
+列是 `share_2024_pct` / `share_2025_pct` / `share_2026_pct`、`change_pp`，以及同样的 `*_title_*` 列：
+
+- Agents：+13.4 pp，标题口径 +9.0，两个口径一致，说明它确实在成为论文主题。
+- Evaluation：+13.2 pp，标题口径只有 +1.0：提到评测的论文多了很多，专门做评测的论文没怎么变。
+- Fine-tuning：−8.5 pp，标题口径 −1.9。
+
+**为什么几乎所有方向都是上升：** 摘要平均长度从 2024 年的 1,322 个字符涨到 2026 年的 1,489 个（+13%，
+见 `output/fig4b_abstract_length_by_year.csv`），摘要越长能提到的东西越多，「提到」口径的占比会普遍上浮一点。
+标题变长得少得多（88 → 94 个字符），标题口径更稳。下结论时以两个口径方向一致的为准。
+
+CSV 里有 2023 年的行，但那年只有一百多篇，图上从 2024 年开始。
 
 ## 图 3　哪些子方向经常一起出现
 
@@ -102,26 +122,6 @@ CSV 里有 2023 年的行，但那年只有一百多篇，图上从 2024 年开�
 行列的顺序是按层次聚类排的（共现模式相近的排在一起），这是整个方向里唯一用到聚类的地方，
 而且聚的是 13 个标签，不是论文。改了规则之后顺序会变。
 Finance 只有 565 篇，涉及它的倍数建立在较少的论文上。
-
-## 图 4　2024 到 2026 年，谁在升温、谁在退潮
-
-![](output/fig4_subfield_share_change.png)
-
-| | |
-|---|---|
-| SQL | [`sql/fig4_subfield_share_change.sql`](sql/fig4_subfield_share_change.sql)、[`sql/fig4b_abstract_length_by_year.sql`](sql/fig4b_abstract_length_by_year.sql)（摘要长度，用于脚注） |
-| CSV | [`output/fig4_subfield_share_change.csv`](output/fig4_subfield_share_change.csv)、[`output/fig4b_abstract_length_by_year.csv`](output/fig4b_abstract_length_by_year.csv) |
-| 列 | `share_2024_pct`、`share_2025_pct`、`share_2026_pct` 各年占比；`change_pp` 2026 减 2024，单位是百分点；`*_title_*` 同样的数，只算标题匹配 |
-
-条形是「标题或摘要」口径的变化，菱形是「标题」口径的变化。图上能读出的：
-
-- Agents 升幅最大：+13.4 个百分点，标题口径也有 +9.0。两个口径一致。
-- Evaluation 条形 +13.2，但菱形只有 +1.0：提到评测的论文多了很多，专门做评测的论文没怎么变。
-- Fine-tuning 是唯一明显下降的：−8.5，标题口径 −1.9。
-
-**为什么几乎所有条形都是正的：** 摘要平均长度从 2024 年的 1,322 个字符涨到 2026 年的 1,489 个（+13%），
-摘要越长能提到的东西越多，所以「提到」口径的占比会普遍上浮一点。标题变长得少得多（88 → 94 个字符），
-菱形是更稳的口径。下结论时以两个口径方向一致的为准。
 
 ---
 

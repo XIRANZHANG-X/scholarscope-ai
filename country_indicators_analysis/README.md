@@ -63,10 +63,15 @@ R&D not significant at 5%. It is shown in green in Figure 3 and not discussed fu
 
 ### 3.1 One indicator at a time
 
-![Single-indicator trendlines](output/fig1_trendlines.png)
+![Papers per million people vs GDP per capita](output/fig1_trend_papers_per_m_vs_gdp_pc.png)
 
-*Figure 1. Each indicator on its own, countries with ≥5 papers, log–log axes. The straight line is a
-power-law trendline. These panels are descriptive; the slopes do not control for the other indicators.*
+*Figure 1. Each indicator on its own, countries with ≥5 papers, log–log axes, one figure per pair:
+`fig1_trend_papers_vs_{gdp_pc,rd_pct,pop_m}.png` and `fig1_trend_papers_per_m_vs_{gdp_pc,rd_pct}.png`.
+The straight line is a power-law trendline. Labelled: the three countries furthest from it and the two
+largest values, each tied to its point by a leader line. These figures are descriptive; the slopes do
+not control for the other indicators. Papers per million vs population is not drawn: its slope is
+simply (papers vs population) − 1 = 0.54 − 1 = −0.46. Its row stays in
+`trendlines_single_indicator.csv`.*
 
 - **Total papers.** On their own, population (R² 0.38) and R&D intensity (R² 0.29) track output
   best. GDP per capita alone explains little (R² 0.08) because the two largest producers, China and
@@ -104,10 +109,10 @@ are robust to heteroscedasticity.
 
 ### 3.3 ≥5 papers vs all countries
 
-![Coefficient comparison](output/fig3_coefficients.png)
+![Coefficient comparison, per capita](output/fig3_coefficients_per_capita.png)
 
 *Figure 3. Elasticities with 95% confidence intervals: the two negative binomial models, plus the
-OLS cross-check.*
+OLS cross-check. One figure per outcome: `fig3_coefficients_total.png`, `fig3_coefficients_per_capita.png`.*
 
 - **No significant differences.** None of the five coefficients differs significantly between the
   two samples (all p > 0.13). Every confidence interval overlaps the other model's estimate.
@@ -121,9 +126,9 @@ OLS cross-check.*
 
 ### 3.4 Outliers
 
-![Actual vs predicted](output/fig2_actual_vs_predicted.png)
+![Actual vs predicted, per capita](output/fig2_actual_vs_predicted_per_capita.png)
 
-*Figure 2. Actual vs predicted output from the main (≥5) negative binomial models. A country is
+*Figure 2 (`fig2_actual_vs_predicted_total.png`, `fig2_actual_vs_predicted_per_capita.png`). Actual vs predicted output from the main (≥5) negative binomial models. A country is
 flagged when its studentized deviance residual is beyond ±2, or when it strongly influences the fit
 (Cook's distance > 4/n). Countries on the dashed line publish exactly what their indicators predict.*
 
@@ -235,14 +240,16 @@ countries can cancel it.
 ```
 country_indicators_analysis/
 ├── README.md                          this report
-├── country_indicators_analysis.py     the analysis (data loading, models, figures, tables)
+├── country_indicators_analysis.py     the analysis (data loading, models, figures, tables);
+│                                      figure style from analysis/common.py (a copy ships in the zip)
 ├── sql/
 │   ├── 00_add_taiwan.sql              one-off: inserts Taiwan into the database
 │   ├── 01_country_paper_counts.sql    papers per country      (bridge.work_countries)
 │   ├── 02_country_indicators.sql      World Bank indicators   (external.country_indicators)
 │   └── 03_country_profiles.sql        names, regions, income  (external.country_profiles)
 └── output/
-    ├── fig1_trendlines.png, fig2_actual_vs_predicted.png, fig3_coefficients.png
+    ├── fig1_trend_*.png (5), fig2_actual_vs_predicted_{total,per_capita}.png,
+    │   fig3_coefficients_{total,per_capita}.png   (300 dpi, 4000×2250, each with a PDF twin)
     ├── 01_country_paper_counts.csv    what sql/01 returned  ┐ saved by every database run;
     ├── 02_country_indicators.csv      what sql/02 returned  │ --from-csv reads these three
     ├── 03_country_profiles.csv        what sql/03 returned  ┘ instead of querying
@@ -282,9 +289,9 @@ python country_indicators_analysis.py --from-csv
 ```
 
 A copy of this folder outside the repository does that by itself, since it has no database to
-reach. The numbers are the same either way, but figures for the deck must come from a database
-run. The team's step-by-step guide is `使用说明.md` (in `analysis/` in the repository, and
-inside the folder when it is handed over as a zip).
+reach. The numbers are the same either way, but final figures should come from a database run
+(`--strict` refuses to fall back to the CSVs). The whole pipeline, from data collection to the
+website, is described in `docs/流程.md` and the repository README.
 
 *History: the first version (2026-10-08) read the CSV export because the database was not
 reachable. It was switched to the database on 2026-10-13; all five output tables came out

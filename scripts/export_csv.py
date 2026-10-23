@@ -1,4 +1,4 @@
-"""Export the corpus as CSV files, for teammates who work in Tableau, Excel, R or pandas.
+"""Export the corpus as CSV files, for anyone who works in Tableau, Excel, R or pandas.
 
     uv run python scripts/export_csv.py [OUT_DIR]
 
